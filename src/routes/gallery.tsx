@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useLang } from "@/lib/i18n";
 import { PageHero } from "@/components/site/PageHero";
+import { SafeImage } from "@/components/site/SafeImage";
 import { GALLERY_PHOTOS, VIDEOS, PRESS, HERO_DESKTOP } from "@/lib/site-data";
 import { X, Play } from "lucide-react";
 
