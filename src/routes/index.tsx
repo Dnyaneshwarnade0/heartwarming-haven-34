@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useLang } from "@/lib/i18n";
 import { HERO_DESKTOP, HERO_MOBILE, STATS, FOUNDER_PHOTO, PRESS } from "@/lib/site-data";
+import { SafeImage } from "@/components/site/SafeImage";
 import { Button } from "@/components/ui/button";
 import { DonateModal } from "@/components/site/DonateModal";
 import {
