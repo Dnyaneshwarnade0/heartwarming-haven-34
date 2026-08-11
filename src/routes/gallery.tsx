@@ -99,7 +99,7 @@ function GalleryPage() {
             <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {PRESS.map((p) => (
                 <button key={p.img} onClick={() => setLightbox(p.img)} className="rounded-2xl bg-card border overflow-hidden shadow-card hover:shadow-warm transition text-left">
-                  <img src={p.img} alt="" className="w-full aspect-[3/4] object-cover object-top" loading="lazy" />
+                  <SafeImage src={p.img} alt={t(p.title)} label={t(p.title)} className="w-full aspect-[3/4] object-cover object-top" fallbackClassName="w-full aspect-[3/4]" />
                   <div className="p-4">
                     <div className="text-[10px] font-bold tracking-widest text-primary uppercase">Press</div>
                     <div className="mt-1.5 text-sm text-maroon line-clamp-3">"{t(p.title)}"</div>
