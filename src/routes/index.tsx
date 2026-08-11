@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useLang } from "@/lib/i18n";
 import { HERO_DESKTOP, HERO_MOBILE, STATS, FOUNDER_PHOTO, PRESS } from "@/lib/site-data";
+import { SafeImage } from "@/components/site/SafeImage";
 import { Button } from "@/components/ui/button";
 import { DonateModal } from "@/components/site/DonateModal";
 import {
@@ -243,7 +244,13 @@ function PressStrip() {
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {PRESS.slice(0, 4).map((p) => (
             <div key={p.img} className="rounded-2xl bg-card border overflow-hidden shadow-card hover:shadow-warm transition">
-              <img src={p.img} alt="" className="w-full aspect-[3/4] object-cover object-top" loading="lazy" />
+              <SafeImage
+                src={p.img}
+                alt={t(p.title)}
+                label={t(p.title)}
+                className="w-full aspect-[3/4] object-cover object-top"
+                fallbackClassName="w-full aspect-[3/4]"
+              />
               <div className="p-4">
                 <div className="text-[10px] font-bold tracking-widest text-primary uppercase">{t({ en: "Press Highlight", mr: "प्रसारमाध्यम" })}</div>
                 <div className="mt-1.5 text-sm text-maroon line-clamp-2">"{t(p.title)}"</div>
