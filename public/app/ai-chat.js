@@ -197,14 +197,11 @@ CORE BEHAVIOR RULES:
    If the user enters a number between 1 and 72 (or asks about a roll number like "5", "roll 5", "५"):
    - Understand immediately that this is a Roll Number query!
    - Find the student with this rollNo in the snapshot.
-   - Present their details: Name (नाव), Roll No (हजेरी क्रमांक), Class (इयत्ता), Fees, and EVERY WEEK'S EXAM MARKS (आठवडा १ ते ९ चे गुण).
-   - End with action to open student profile and graph:
-   \`\`\`action
-   {"type":"open_student","studentId":"<id>"}
-   \`\`\`
+   - Present their details directly inside the chat: Name (नाव), Roll No (हजेरी क्रमांक), Class (इयत्ता), Parent Details, Fees, Attendance, and EVERY WEEK'S EXAM MARKS (आठवडा १ ते ९ चे गुण).
+   - DO NOT redirect or switch screens away from the chat! DO NOT emit open_student action. The user must stay inside the bot chat.
    - And provide options:
    \`\`\`options
-   ["हजेरी तपासा", "फी लेजर बघा", "तक्रार नोंदवा", "दुसरा रोल नंबर शोधा"]
+   ["📝 तक्रार नोंदवा", "💵 फी जमा करा", "🧾 फी पावती", "दुसरा रोल नंबर शोधा", "🏠 मुख्य मेनू"]
    \`\`\`
 
 3. INVALID ROLL NUMBER:
@@ -467,19 +464,6 @@ CORE BEHAVIOR RULES:
                 const photoUrl = stu.photo || stu.photoUrl || '';
                 const photoMarkdown = photoUrl ? `![${stuNameMr}](${photoUrl})\n` : '';
 
-                // Open student profile and graph in software UI
-                if (typeof window.renderStudentProfile === 'function') {
-                    setTimeout(() => {
-                        try {
-                            window.renderStudentProfile(stu.id);
-                            setTimeout(() => {
-                                const pBtn = document.querySelector('#panel-student-profile .profile-tabs-card .profile-tab-btn[data-tab="tab-progress"]');
-                                if (pBtn) pBtn.click();
-                            }, 250);
-                        } catch (_) {}
-                    }, 150);
-                }
-
                 const studentDetailsReply = `${photoMarkdown}👤 **विद्यार्थी संपूर्ण तपशील (Roll No. ${stu.rollNo})**
 
 📋 **वैयक्तिक माहिती:**
@@ -511,7 +495,7 @@ ${remSection}
 🏥 **वैद्यकीय माहिती:**
 • रक्तगट: **${blood}** | प्रकृती: **${illness}**
 
-✅ *सॉफ्टवेअरमध्ये **${stuNameMr}** यांचे संपूर्ण प्रोफाईल व **साप्ताहिक गुणांचा आलेख (Graph)** उघडला आहे.*
+💡 *टीप: विद्यार्थ्याची तक्रार नोंदवण्यासाठी किंवा फी पावतीसाठी खालील पर्याय वापरा.*
 
 \`\`\`options
 ["📝 ${stu.rollNo} ची तक्रार नोंदवा", "💵 ${stu.rollNo} ची फी जमा करा", "🧾 ${stu.rollNo} ची फी पावती", "दुसरा रोल नंबर शोधा", "🏠 मुख्य मेनू"]
@@ -528,8 +512,7 @@ ${remSection}
 
         // Telegram Bot Menu Handlers
         if (query.includes('1️⃣') || query === 'हजेरी घ्या') {
-            if (typeof switchPanel === 'function') switchPanel('panel-attendance');
-            const attReply = `📋 **हजेरी व्यवस्थापन (1️⃣ हजेरी घ्या)**\n\nसॉफ्टवेअरमध्ये हजेरी पॅनल उघडले आहे. खालीलपैकी सत्र निवडा किंवा आज गैरहजर असणाऱ्यांची यादी तपासा:\n\n\`\`\`options\n["सकाळची हजेरी (Morning)", "शाळेची हजेरी (School)", "संध्याकाळची हजेरी (Evening)", "आज गैरहजर असणारे विद्यार्थी", "🏠 मुख्य मेनू"]\n\`\`\``;
+            const attReply = `📋 **हजेरी व्यवस्थापन (1️⃣ हजेरी घ्या)**\n\nखालीलपैकी सत्र निवडा किंवा आज गैरहजर असणाऱ्यांची यादी तपासा:\n\n\`\`\`options\n["सकाळची हजेरी (Morning)", "शाळेची हजेरी (School)", "संध्याकाळची हजेरी (Evening)", "आज गैरहजर असणारे विद्यार्थी", "🏠 मुख्य मेनू"]\n\`\`\``;
             setTimeout(() => {
                 history.push({ role: 'assistant', content: attReply });
                 saveHistory();
@@ -539,8 +522,7 @@ ${remSection}
         }
 
         if (query.includes('2️⃣') || query === 'विद्यार्थी माहिती') {
-            if (typeof switchPanel === 'function') switchPanel('panel-students');
-            const stuReply = `👥 **विद्यार्थी माहिती डिरेक्टरी (2️⃣ विद्यार्थी माहिती)**\n\nगुरुकुलातील सर्व ७२ विद्यार्थ्यांची यादी उघडली आहे. ज्या विद्यार्थ्याची संपूर्ण माहिती हवी आहे, त्यांचा **हजेरी क्रमांक (Roll No. १ ते ७२)** इथे टाका:\n\n\`\`\`options\n["१ (अवधूत गाडेकर)", "२ (यश खरात)", "११ (संगम तोडकर)", "१५ (लक्की बाघुल)", "३५ (वेदांत गव्हाणे)", "🏠 मुख्य मेनू"]\n\`\`\``;
+            const stuReply = `👥 **विद्यार्थी माहिती डिरेक्टरी (2️⃣ विद्यार्थी माहिती)**\n\nज्या विद्यार्थ्याची संपूर्ण माहिती, निकाल व फी हवी आहे, त्यांचा **हजेरी क्रमांक (Roll No. १ ते ७२)** इथे टाका:\n\n\`\`\`options\n["१ (अवधूत गाडेकर)", "२ (यश खरात)", "११ (संगम तोडकर)", "१५ (लक्की बाघुल)", "३५ (वेदांत गव्हाणे)", "🏠 मुख्य मेनू"]\n\`\`\``;
             setTimeout(() => {
                 history.push({ role: 'assistant', content: stuReply });
                 saveHistory();
@@ -621,8 +603,7 @@ ${remSection}
         }
 
         if (query.includes('8️⃣') || query === 'सूचना पाठवा') {
-            if (typeof switchPanel === 'function') switchPanel('panel-sms');
-            const alertReply = `📢 **पालकांना सूचना पाठवा (8️⃣ सूचना पाठवा)**\n\nसॉफ्टवेअरमध्ये SMS व सूचना पॅनल उघडले आहे. पालकांना WhatsApp / SMS द्वारे सूचना पाठवण्यासाठी पर्याय निवडा:\n\n\`\`\`options\n["गैरहजर विद्यार्थ्यांच्या पालकांना SMS", "फी थकबाकी सूचना", "सामान्य गुरुकुल सूचना", "🏠 मुख्य मेनू"]\n\`\`\``;
+            const alertReply = `📢 **पालकांना सूचना पाठवा (8️⃣ सूचना पाठवा)**\n\nपालकांना WhatsApp / SMS द्वारे सूचना पाठवण्यासाठी पर्याय निवडा:\n\n\`\`\`options\n["गैरहजर विद्यार्थ्यांच्या पालकांना SMS", "फी थकबाकी सूचना", "सामान्य गुरुकुल सूचना", "🏠 मुख्य मेनू"]\n\`\`\``;
             setTimeout(() => {
                 history.push({ role: 'assistant', content: alertReply });
                 saveHistory();
@@ -632,8 +613,7 @@ ${remSection}
         }
 
         if (query.includes('9️⃣') || query === 'परीक्षा गुण') {
-            if (typeof switchPanel === 'function') switchPanel('panel-exam');
-            const exReply = `📝 **परीक्षा गुण व्यवस्थापन (9️⃣ परीक्षा गुण)**\n\nसॉफ्टवेअरमध्ये परीक्षा विभाग उघडला आहे. साप्ताहिक परीक्षा १ ते ९ चे गुण तपासण्यासाठी किंवा भरण्यासाठी पर्याय निवडा:\n\n\`\`\`options\n["📊 साप्ताहिक गुण", "गुणवत्ता यादी (Merit List)", "नवीन परीक्षा तयार करा", "🏠 मुख्य मेनू"]\n\`\`\``;
+            const exReply = `📝 **परीक्षा गुण व्यवस्थापन (9️⃣ परीक्षा गुण)**\n\nसाप्ताहिक परीक्षा १ ते ९ चे गुण तपासण्यासाठी पर्याय निवडा किंवा रोल नंबर टाका:\n\n\`\`\`options\n["📊 साप्ताहिक गुण", "गुणवत्ता यादी (Merit List)", "११ (संगम गुण)", "१५ (लक्की गुण)", "🏠 मुख्य मेनू"]\n\`\`\``;
             setTimeout(() => {
                 history.push({ role: 'assistant', content: exReply });
                 saveHistory();
@@ -653,8 +633,7 @@ ${remSection}
         }
 
         if (query.includes('🔟') || query === 'दैनंदिन सेवा') {
-            if (typeof switchPanel === 'function') switchPanel('panel-daily-task');
-            const taskReply = `⏰ **दैनंदिन सेवा व वेळापत्रक (🔟 दैनंदिन सेवा)**\n\nकाकडा, दैनंदिन पाठ, हरिपाठ व संध्या आरतीच्या कामांचे पॅनल उघडले आहे:\n\n\`\`\`options\n["🌅 सकाळची सेवा", "🌆 संध्याकाळची सेवा", "सेवा पूर्ण नोंदवा", "🏠 मुख्य मेनू"]\n\`\`\``;
+            const taskReply = `⏰ **दैनंदिन सेवा व वेळापत्रक (🔟 दैनंदिन सेवा)**\n\nकाकडा, दैनंदिन पाठ, हरिपाठ व संध्या आरतीच्या कामांची माहिती:\n\n\`\`\`options\n["🌅 सकाळची सेवा", "🌆 संध्याकाळची सेवा", "सेवा पूर्ण नोंदवा", "🏠 मुख्य मेनू"]\n\`\`\``;
             setTimeout(() => {
                 history.push({ role: 'assistant', content: taskReply });
                 saveHistory();
@@ -664,12 +643,7 @@ ${remSection}
         }
 
         if (query.includes('🎓') || query === 'नवीन प्रवेश') {
-            if (typeof window.openAddStudentModal === 'function') {
-                setTimeout(window.openAddStudentModal, 200);
-            } else if (typeof switchPanel === 'function') {
-                switchPanel('panel-students');
-            }
-            const admReply = `🎓 **नवीन विद्यार्थी प्रवेश (🎓 नवीन प्रवेश)**\n\nनवीन विद्यार्थी नोंदणी फॉर्म उघडला आहे. विद्यार्थ्याचे नाव, पालकांचा फोन, वर्ग आणि पत्ता भरून जतन करा.\n\n\`\`\`options\n["विद्यार्थी यादी पहा", "प्रवेश नियम", "🏠 मुख्य मेनू"]\n\`\`\``;
+            const admReply = `🎓 **नवीन विद्यार्थी प्रवेश (🎓 नवीन प्रवेश)**\n\nनवीन विद्यार्थी नोंदणीसाठी खालील माहिती इथे सांगा (उदा. 'नवीन विद्यार्थी: नाव - रोहन शिंदे, वर्ग - ५ वी, फोन - 9876543210'):\n\n\`\`\`options\n["विद्यार्थी यादी पहा", "प्रवेश नियम", "🏠 मुख्य मेनू"]\n\`\`\``;
             setTimeout(() => {
                 history.push({ role: 'assistant', content: admReply });
                 saveHistory();
@@ -689,8 +663,7 @@ ${remSection}
         }
 
         if (query.includes('📝') || query === 'मूल्यांकन') {
-            if (typeof switchPanel === 'function') switchPanel('panel-reports');
-            const evalReply = `📊 **विद्यार्थी मूल्यमापन अहवाल (📝 मूल्यांकन)**\n\nअभ्यास, शिस्त आणि परीक्षेवर आधारित मूल्यांकन रिपोर्ट उघडला आहे:\n\n\`\`\`options\n["उत्कृष्ट विद्यार्थी", "सुधारणा आवश्यक विद्यार्थी", "सर्व विद्यार्थी रिपोर्ट", "🏠 मुख्य मेनू"]\n\`\`\``;
+            const evalReply = `📊 **विद्यार्थी मूल्यमापन अहवाल (📝 मूल्यांकन)**\n\nअभ्यास, शिस्त आणि परीक्षेवर आधारित मूल्यांकन रिपोर्ट:\n\n\`\`\`options\n["उत्कृष्ट विद्यार्थी", "सुधारणा आवश्यक विद्यार्थी", "सर्व विद्यार्थी रिपोर्ट", "🏠 मुख्य मेनू"]\n\`\`\``;
             setTimeout(() => {
                 history.push({ role: 'assistant', content: evalReply });
                 saveHistory();
@@ -720,8 +693,7 @@ ${remSection}
         }
 
         if (query.includes('✏️') || query === 'बदल करा') {
-            if (typeof switchPanel === 'function') switchPanel('panel-settings');
-            const setReply = `⚙️ **सॉफ्टवेअर सेटिंग्ज व बदल (✏️ बदल करा)**\n\nसेटिंग्ज पॅनल उघडले आहे. पासवर्ड, ॲडमिन प्रोफाईल किंवा बायोमेट्रिक बदलण्यासाठी पर्याय निवडा:\n\n\`\`\`options\n["🔐 पासवर्ड बदला", "👤 ॲडमिन प्रोफाईल", "🛡️ बायोमेट्रिक फिंगरप्रिंट", "🏠 मुख्य मेनू"]\n\`\`\``;
+            const setReply = `⚙️ **सॉफ्टवेअर सेटिंग्ज व बदल (✏️ बदल करा)**\n\nकाय बदल करायचा आहे ते सांगा (उदा. पासवर्ड, बायोमेट्रिक, बॅकअप):\n\n\`\`\`options\n["🔐 पासवर्ड बदला", "👤 ॲडमिन प्रोफाईल", "🛡️ बायोमेट्रिक फिंगरप्रिंट", "🏠 मुख्य मेनू"]\n\`\`\``;
             setTimeout(() => {
                 history.push({ role: 'assistant', content: setReply });
                 saveHistory();
@@ -786,20 +758,7 @@ ${remSection}
 
             const stuName = nameOf(stu);
 
-            // Open student profile and progress chart in software
-            if (typeof window.renderStudentProfile === 'function') {
-                setTimeout(() => {
-                    try {
-                        window.renderStudentProfile(stu.id);
-                        setTimeout(() => {
-                            const pBtn = document.querySelector('#panel-student-profile .profile-tabs-card .profile-tab-btn[data-tab="tab-progress"]');
-                            if (pBtn) pBtn.click();
-                        }, 250);
-                    } catch (_) { }
-                }, 200);
-            }
-
-            const studentReply = `👤 **विद्यार्थी माहिती:**\n• **नाव:** ${stuName}\n• **हजेरी क्रमांक (Roll No.):** ${stu.rollNo}\n• **इयत्ता:** ${stu.standard || '५'} वी\n• **पालक फोन:** ${stu.phone || 'उपलब्ध नाही'}\n• **फी:** एकूण ₹${totalFees} | भरलेली ₹${paidFees} | शिल्लक ₹${balance}\n\n📈 **साप्ताहिक परीक्षा गुण (हप्ता १ ते ९):**\n${marksLines}\n${avg !== null ? `\n📊 **एकूण सरासरी गुण:** **${avg}%** (${rating})\n` : ''}\n✅ *सॉफ्टवेअरमध्ये ${stuName} यांचे प्रोफाईल आणि **साप्ताहिक गुणांचा आलेख (Graph)** उघडला आहे.*\n\n\`\`\`options\n["हजेरी तपासा", "फी लेजर बघा", "तक्रार नोंदवा", "दुसरा रोल नंबर शोधा"]\n\`\`\``;
+            const studentReply = `👤 **विद्यार्थी माहिती:**\n• **नाव:** ${stuName}\n• **हजेरी क्रमांक (Roll No.):** ${stu.rollNo}\n• **इयत्ता:** ${stu.standard || '५'} वी\n• **पालक फोन:** ${stu.phone || 'उपलब्ध नाही'}\n• **फी:** एकूण ₹${totalFees} | भरलेली ₹${paidFees} | शिल्लक ₹${balance}\n\n📈 **साप्ताहिक परीक्षा गुण (हप्ता १ ते ९):**\n${marksLines}\n${avg !== null ? `\n📊 **एकूण सरासरी गुण:** **${avg}%** (${rating})\n` : ''}\n💡 *टीप: अधिक तपशीलांसाठी खालील पर्याय निवडा.*\n\n\`\`\`options\n["हजेरी तपासा", "फी लेजर बघा", "तक्रार नोंदवा", "दुसरा रोल नंबर शोधा"]\n\`\`\``;
 
             setTimeout(() => {
                 history.push({ role: 'assistant', content: studentReply });
@@ -828,19 +787,7 @@ ${remSection}
                     cmpReply = `👤 **विद्यार्थी:** ${sName} (हजेरी क्र. ${matchedStu.rollNo})\n\n✅ **तक्रारी:** या विद्यार्थ्याच्या नावावर सध्या कोणतीही तक्रार नोंदवलेली नाही. शिस्त समाधानकारक आहे.`;
                 } else {
                     const list = cmps.map((c, i) => `${i + 1}. 📅 **तारीख:** ${c.date || 'नोंद नाही'} | **प्रकार:** ${c.type || 'सामान्य'} | **तीव्रता:** ${c.severity || 'सामान्य'}\n   👉 **कारवाई/कृती:** ${c.action || 'कोणतीही नोंद नाही'}`).join('\n\n');
-                    cmpReply = `⚠️ **अंकुश महाराज, ${sName} (हजेरी क्र. ${matchedStu.rollNo}) यांच्या नोंदवलेल्या तक्रारी (${cmps.length}):**\n\n${list}\n\n✅ *सॉफ्टवेअरमध्ये विद्यार्थ्याचे प्रोफाईल व गैरशिस्त नोंद पॅनल उघडले आहे.*`;
-                }
-
-                if (typeof window.renderStudentProfile === 'function') {
-                    setTimeout(() => {
-                        try {
-                            window.renderStudentProfile(matchedStu.id);
-                            setTimeout(() => {
-                                const tBtn = document.querySelector('#panel-student-profile .profile-tabs-card .profile-tab-btn[data-tab="tab-incident"]');
-                                if (tBtn) tBtn.click();
-                            }, 250);
-                        } catch (_) { }
-                    }, 200);
+                    cmpReply = `⚠️ **अंकुश महाराज, ${sName} (हजेरी क्र. ${matchedStu.rollNo}) यांच्या नोंदवलेल्या तक्रारी (${cmps.length}):**\n\n${list}\n\n💡 *टीप: नवीन तक्रार नोंदवण्यासाठी खालील पर्याय वापरा.*`;
                 }
 
                 cmpReply += `\n\n\`\`\`options\n["साप्ताहिक परीक्षा निकाल", "हजेरी तपासा", "फी बाकी असणारे", "विद्यार्थी यादी"]\n\`\`\``;
@@ -918,15 +865,19 @@ ${remSection}
 
                     // Fallback: direct handling if ai-actions.js not loaded
                     if (a.type === 'open_panel' && typeof switchPanel === 'function') {
-                        setTimeout(() => switchPanel(a.value), 600);
+                        if (/उघडा|open|जा|दाखवा/i.test(query)) {
+                            setTimeout(() => switchPanel(a.value), 600);
+                        }
                         return;
                     }
                     if (a.type === 'open_student' && typeof window.renderStudentProfile === 'function') {
-                        setTimeout(() => {
-                            window.renderStudentProfile(a.studentId);
-                            const pBtn = document.querySelector('#panel-student-profile .profile-tabs-card .profile-tab-btn[data-tab="tab-progress"]');
-                            if (pBtn) pBtn.click();
-                        }, 400);
+                        if (/प्रोफाईल उघडा|open profile|profile open/i.test(query)) {
+                            setTimeout(() => {
+                                window.renderStudentProfile(a.studentId);
+                                const pBtn = document.querySelector('#panel-student-profile .profile-tabs-card .profile-tab-btn[data-tab="tab-progress"]');
+                                if (pBtn) pBtn.click();
+                            }, 400);
+                        }
                         return;
                     }
                 };

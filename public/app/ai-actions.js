@@ -71,6 +71,11 @@
         open_student: function (a) {
             const s = findStudent(a);
             if (!s) return null;
+            const botPanel = document.getElementById('panel-bot');
+            const inBot = botPanel && (botPanel.classList.contains('active') || !botPanel.classList.contains('d-none'));
+            if (inBot && !a.forceRedirect) {
+                return null;
+            }
             if (typeof window.renderStudentProfile === 'function') {
                 window.renderStudentProfile(s.id);
                 setTimeout(() => {
