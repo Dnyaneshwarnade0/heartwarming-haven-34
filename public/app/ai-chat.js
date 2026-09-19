@@ -524,6 +524,33 @@ CORE BEHAVIOR RULES:
             }
         }
 
+        // 7b. Specific Student Attendance query: e.g. "1 ची हजेरी", "roll 1 attendance", "१ हजेरी", "१ ची उपस्थिती"
+        if (rNum && /(?:attendance|हजेरी|उपस्थिती)/i.test(lower)) {
+            const stu = stus.find(x => Number(x.rollNo) === rNum);
+            if (stu) {
+                const sName = nameOf(stu);
+                const now = new Date();
+                const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                const todayFormatted = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+                const todayRec = (stu.dailyAttendance && stu.dailyAttendance[todayKey]) || null;
+                const hasToday = todayRec && (todayRec.morning !== undefined || todayRec.school !== undefined || todayRec.evening !== undefined);
+
+                if (!hasToday) {
+                    return `📋 **हजेरी अहवाल — ${sName} (Roll No. ${stu.rollNo})**\n📅 **तारीख:** ${todayFormatted}\n\n⚠️ **आजची हजेरी अद्याप घेतलेली नाही (Not Taken Yet).**\n\n\`\`\`options\n["👤 ${stu.rollNo} ची माहिती", "1️⃣ हजेरी घ्या", "🏠 मुख्य मेनू"]\n\`\`\``;
+                }
+                const fmtAtt = (val) => {
+                    if (val === true) return '✅ हजर';
+                    if (val === false) return '❌ गैरहजर';
+                    if (val === 'leave') return '🏖️ रजा';
+                    return '⏳ नोंद नाही';
+                };
+                const mStatus = todayRec.morning !== undefined ? fmtAtt(todayRec.morning) : '⏳ नोंद नाही';
+                const sStatus = todayRec.school !== undefined ? fmtAtt(todayRec.school) : '⏳ नोंद नाही';
+                const eStatus = todayRec.evening !== undefined ? fmtAtt(todayRec.evening) : '⏳ नोंद नाही';
+                return `📋 **आजची हजेरी — ${sName} (Roll No. ${stu.rollNo})**\n📅 **तारीख:** ${todayFormatted}\n\n• सकाळ: **${mStatus}**\n• शाळा: **${sStatus}**\n• संध्याकाळ: **${eStatus}**\n\n\`\`\`options\n["👤 ${stu.rollNo} ची माहिती", "🏠 मुख्य मेनू"]\n\`\`\``;
+            }
+        }
+
         // 8. Roll Number Entered -> Show ALL Student Details
         const isMenuEmoji = /^[1-9]️⃣|🔟|📊|🎓|🧾|📝|🏠|📚|✏️/.test(query);
         const isWriteAct = /(?:add|करा|जमा|नोंदवा)\s*(?:complaint|fee|remark|medical|तक्रार|फी|शेरा)/i.test(query) ||
@@ -543,22 +570,15 @@ CORE BEHAVIOR RULES:
                 const balance = totalFees - paidFees;
                 const feeStatus = balance <= 0 ? '✅ पूर्ण भरली (NIL Due)' : `⚠️ शिल्लक ₹${balance.toLocaleString('en-IN')}`;
 
-                const att = sessionStats(stu);
-                const mornStr = att.morningPct != null ? `${att.morningPct}%` : 'नोंद नाही';
-                const schStr = att.schoolPct != null ? `${att.schoolPct}%` : 'नोंद नाही';
-                const eveStr = att.eveningPct != null ? `${att.eveningPct}%` : 'नोंद नाही';
-                const ovrStr = att.overallPct != null ? `${att.overallPct}%` : 'नोंद नाही';
-
-                // Check today's actual attendance
+                // Check today's actual attendance ONLY
                 const now = new Date();
                 const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
                 const todayFormatted = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
                 
                 const todayRec = (stu.dailyAttendance && stu.dailyAttendance[todayKey]) || null;
+                const hasToday = todayRec && (todayRec.morning !== undefined || todayRec.school !== undefined || todayRec.evening !== undefined);
                 let todayAttSection = '';
-                if (!todayRec || (todayRec.morning === undefined && todayRec.school === undefined && todayRec.evening === undefined)) {
-                    todayAttSection = `📅 **आजची हजेरी (${todayFormatted}):**\n⚠️ **आजची हजेरी अद्याप घेतलेली नाही (Not Taken Yet)**`;
-                } else {
+                if (hasToday) {
                     const fmtAtt = (val) => {
                         if (val === true) return '✅ हजर';
                         if (val === false) return '❌ गैरहजर';
@@ -569,6 +589,8 @@ CORE BEHAVIOR RULES:
                     const sStatus = todayRec.school !== undefined ? fmtAtt(todayRec.school) : '⏳ नोंद नाही';
                     const eStatus = todayRec.evening !== undefined ? fmtAtt(todayRec.evening) : '⏳ नोंद नाही';
                     todayAttSection = `📅 **आजची हजेरी (${todayFormatted}):**\n• सकाळ: **${mStatus}** | शाळा: **${sStatus}** | संध्याकाळ: **${eStatus}**`;
+                } else {
+                    todayAttSection = `📅 **आजची हजेरी (${todayFormatted}):**\n⚠️ **आजची हजेरी अद्याप घेतलेली नाही (Not Taken)**`;
                 }
 
                 const wkMarks = getStudentWeeklyMarks(stu.id);
@@ -612,8 +634,6 @@ CORE BEHAVIOR RULES:
 
 ${todayAttSection}
 
-📊 **मागील एकूण सरासरी उपस्थिती:** **${ovrStr}** (सकाळ: ${mornStr} | शाळा: ${schStr} | संध्याकाळ: ${eveStr})
-
 📈 **साप्ताहिक परीक्षा निकाल (हप्ता १ ते ९):**
 ${marksLines}
 ${avg != null ? `\n🎯 **एकूण सरासरी गुण:** **${avg}%** (${rating})\n` : ''}
@@ -639,7 +659,14 @@ ${remSection}
         const todayDateKey = `${nowObj.getFullYear()}-${String(nowObj.getMonth() + 1).padStart(2, '0')}-${String(nowObj.getDate()).padStart(2, '0')}`;
         const todayDateFormatted = `${String(nowObj.getDate()).padStart(2, '0')}/${String(nowObj.getMonth() + 1).padStart(2, '0')}/${nowObj.getFullYear()}`;
 
-        if (query.includes('1️⃣') || query === 'हजेरी घ्या' || lower === 'हजेरी' || lower === 'attendance') {
+        if (query.includes('1️⃣') || query === 'हजेरी घ्या' || lower === 'हजेरी' || lower === 'attendance' || /^(आजची हजेरी|हजेरी अहवाल|हजेरी दाखवा|attendance report|today attendance)/i.test(lower)) {
+            const hasAnyToday = stus.some(s => {
+                const r = s.dailyAttendance && s.dailyAttendance[todayDateKey];
+                return r && (r.morning !== undefined || r.school !== undefined || r.evening !== undefined);
+            });
+            if (!hasAnyToday) {
+                return `📋 **हजेरी व्यवस्थापन (1️⃣ हजेरी अहवाल)**\n📅 **आजची तारीख:** ${todayDateFormatted}\n\n⚠️ **आजची कोणतीही हजेरी अद्याप घेतलेली नाही (Not Taken Yet).**\n\nहजेरी नोंदवण्यासाठी खालीलपैकी सत्र निवडा:\n\n\`\`\`options\n["सकाळची हजेरी (Morning)", "शाळेची हजेरी (School)", "संध्याकाळची हजेरी (Evening)", "🏠 मुख्य मेनू"]\n\`\`\``;
+            }
             return `📋 **हजेरी व्यवस्थापन (1️⃣ हजेरी घ्या)**\n📅 **आजची तारीख:** ${todayDateFormatted}\n\nखालीलपैकी सत्र निवडा किंवा आज गैरहजर असणाऱ्यांची यादी तपासा:\n\n\`\`\`options\n["सकाळची हजेरी (Morning)", "शाळेची हजेरी (School)", "संध्याकाळची हजेरी (Evening)", "आज गैरहजर असणारे विद्यार्थी", "🏠 मुख्य मेनू"]\n\`\`\``;
         }
 

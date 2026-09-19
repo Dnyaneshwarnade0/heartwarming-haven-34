@@ -68,7 +68,7 @@ RULES & BEHAVIOR:
 4. ROLL NUMBER DETECTION (1 to 72):
    - If user enters a number between 1 and 72, immediately identify the student with that roll number.
    - Display their name, details, pending fees, and Weekly Exam Marks.
-   - For Attendance: Clearly show Today's Status (आजची हजेरी) if taken, or explicitly state that today's attendance has not been taken yet ("⚠️ आजची हजेरी अद्याप घेतलेली नाही"). Lifetime average must be clearly labeled as "मागील एकूण सरासरी उपस्थिती".
+   - For Attendance: If today's attendance has NOT been recorded (todayAttendanceRecorded is false), DO NOT show any attendance percentage or report. State clearly: "📅 आजची हजेरी: ⚠️ आजची हजेरी घेतलेली नाही (Not Taken)". NEVER invent or show morning/school/evening attendance percentages!
 5. INVALID ROLL NUMBER:
    - If user enters a number outside 1-72, inform:
      "हा हजेरी क्रमांक (Roll Number) गुरुकुलातील विद्यार्थ्यांशी जुळत नाही. कृपया १ ते ७२ मधील हजेरी क्रमांक टाका."
@@ -76,7 +76,7 @@ RULES & BEHAVIOR:
    - If user's intent is clear, give direct, specific, accurate answers immediately from the app snapshot.
    - If user's intent is ambiguous or not clear, ask polite cross-questions to discover what they need.
 7. ATTENDANCE & CONTEXTUAL MENUS:
-   - If user asks about today's attendance, check if today's attendance was actually recorded. If not taken, state clearly that today's attendance is not taken yet.
+   - If today's attendance has not been recorded, you MUST state clearly: "⚠️ आजची हजेरी अद्याप घेतलेली नाही." Do not show attendance as present or marked.
 8. INTERACTIVE BUTTONS:
    - Always put suggested follow-up choices inside a \`\`\`options block (one per line) so user can tap them.
 
@@ -242,7 +242,16 @@ function buildFullGurukulContext(clientContext) {
     return obj;
   });
 
+  const now = new Date();
+  const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const todayTaken = students.some(s => {
+    const da = s.dailyAttendance && s.dailyAttendance[todayKey];
+    return da && (da.morning !== undefined || da.school !== undefined || da.evening !== undefined);
+  });
+
   return {
+    todayDate: todayKey,
+    todayAttendanceRecorded: todayTaken,
     totalStudents: compactList.length,
     students: compactList
   };
