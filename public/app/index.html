@@ -44,56 +44,24 @@
         });
       }
     </script>
-    <style>
-      html.vss-auto-logged-in #auth-container { display: none !important; }
-      html.vss-auto-logged-in #app-container { display: block !important; }
-      html.vss-auto-logged-in #mobile-bottom-nav { display: flex !important; }
-      html.vss-auto-logged-in #ai-chat-fab { display: flex !important; }
-    </style>
     <script>
-      (function() {
-        try {
-          var s = JSON.parse(localStorage.getItem('vss_session_user') || 'null');
-          if (s && (s.username || s.name)) {
-            document.documentElement.classList.add('vss-auto-logged-in');
-          }
-        } catch (_) {}
-      })();
       window.vssDirectLogin = function(e) {
-        if (e) {
-          if (typeof e.preventDefault === 'function') e.preventDefault();
-          if (typeof e.stopPropagation === 'function') e.stopPropagation();
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+        var uInput = document.getElementById('username');
+        var pInput = document.getElementById('password');
+        if (uInput) uInput.value = 'ankush';
+        if (pInput) pInput.value = 'Ankush@1232';
+        if (typeof window.vssLoginAs === 'function') {
+          window.vssLoginAs('ankush', true);
+        } else {
+          var t = setInterval(function() {
+            if (typeof window.vssLoginAs === 'function') {
+              clearInterval(t);
+              window.vssLoginAs('ankush', true);
+            }
+          }, 100);
+          setTimeout(function() { clearInterval(t); }, 6000);
         }
-        var u = { username: 'ankush', name: 'अंकुश महाराज कदम', role: 'admin' };
-        try {
-          localStorage.setItem('vss_session_user', JSON.stringify(u));
-          localStorage.setItem('vss_last_user', 'ankush');
-          sessionStorage.removeItem('vss_login_attempts');
-          sessionStorage.removeItem('vss_login_locked_until');
-        } catch (_) {}
-        document.documentElement.classList.add('vss-auto-logged-in');
-        window.currentUser = u;
-        if (typeof currentUser !== 'undefined') currentUser = u;
-
-        var auth = document.getElementById('auth-container');
-        var app = document.getElementById('app-container');
-        var nav = document.getElementById('mobile-bottom-nav');
-        var fab = document.getElementById('ai-chat-fab');
-        if (auth) { auth.classList.add('d-none'); auth.style.setProperty('display', 'none', 'important'); }
-        if (app) { app.classList.remove('d-none'); app.style.setProperty('display', 'block', 'important'); }
-        if (nav) { nav.classList.remove('d-none'); nav.style.setProperty('display', 'flex', 'important'); }
-        if (fab) { fab.classList.remove('d-none'); fab.style.setProperty('display', 'flex', 'important'); }
-
-        if (typeof launchApp === 'function') {
-          try { launchApp(); } catch (_) {}
-        } else if (typeof window.vssLoginAs === 'function') {
-          try { window.vssLoginAs('ankush', true); } catch (_) {}
-        }
-        setTimeout(function() {
-          if (typeof launchApp === 'function') {
-            try { launchApp(); } catch (_) {}
-          }
-        }, 400);
       };
     </script>
     <!-- Stylesheet -->
@@ -1571,6 +1539,6 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- cloud.js आधी क्लाऊडवरून डेटा आणतो, मग बाकीचे स्क्रिप्ट लोड करतो -->
-    <script src="cloud.js?v=21"></script>
+    <script src="cloud.js?v=22"></script>
   </body>
 </html>

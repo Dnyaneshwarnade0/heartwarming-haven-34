@@ -6272,24 +6272,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (_) { }
     };
     
-    // Check if session user already exists (remember me or 1-click direct login)
-    let hasActiveSession = false;
-    try {
-        const sess = JSON.parse(localStorage.getItem('vss_session_user') || 'null');
-        if (sess && (sess.username || sess.name)) {
-            currentUser = sess;
-            window.currentUser = currentUser;
-            hasActiveSession = true;
-        }
-    } catch (_) {}
-
-    if (hasActiveSession) {
-        launchApp();
-    } else {
-        currentUser = null;
-        showLoginScreen();
-    }
-
     setupTranslationListeners();
     setupAuthListeners();
     setupNavigationListeners();
@@ -6307,6 +6289,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateAdminUI();
     setupAdminProfileListener();
     updateLoginBiometricsUI();
+
+    // Check if session user already exists (remember me or 1-click direct login)
+    let hasActiveSession = false;
+    try {
+        const sess = JSON.parse(localStorage.getItem('vss_session_user') || 'null');
+        if (sess && (sess.username || sess.name)) {
+            currentUser = sess;
+            window.currentUser = currentUser;
+            hasActiveSession = true;
+        }
+    } catch (_) {}
+
+    if (hasActiveSession) {
+        launchApp();
+    } else {
+        currentUser = null;
+        showLoginScreen();
+    }
 });
 
 // ==========================================
@@ -6398,24 +6398,25 @@ function showLoginScreen() {
     document.documentElement.classList.remove('vss-auto-logged-in');
     const auth = document.getElementById('auth-container');
     const app = document.getElementById('app-container');
-    if (auth) { auth.classList.remove('d-none'); auth.style.display = ''; }
-    if (app) { app.classList.add('d-none'); app.style.display = 'none'; }
-    document.getElementById('mobile-bottom-nav')?.classList.add('d-none');
+    const nav = document.getElementById('mobile-bottom-nav');
     const fab = document.getElementById('ai-chat-fab');
+    if (auth) { auth.classList.remove('d-none'); auth.style.display = ''; }
+    if (app) { app.classList.add('d-none'); app.style.display = ''; }
+    if (nav) { nav.classList.add('d-none'); nav.style.display = ''; }
     if (fab) { fab.classList.add('d-none'); fab.style.display = 'none'; }
     document.getElementById('ai-chat-panel')?.classList.add('d-none');
     updateLoginBiometricsUI();
 }
 
 function hideLoginScreen() {
-    document.documentElement.classList.add('vss-auto-logged-in');
+    document.documentElement.classList.remove('vss-auto-logged-in');
     const auth = document.getElementById('auth-container');
     const app = document.getElementById('app-container');
-    if (auth) { auth.classList.add('d-none'); auth.style.display = 'none'; }
-    if (app) { app.classList.remove('d-none'); app.style.display = 'block'; }
     const nav = document.getElementById('mobile-bottom-nav');
-    if (nav) { nav.classList.remove('d-none'); nav.style.display = 'flex'; }
     const fab = document.getElementById('ai-chat-fab');
+    if (auth) { auth.classList.add('d-none'); auth.style.display = ''; }
+    if (app) { app.classList.remove('d-none'); app.style.display = ''; }
+    if (nav) { nav.classList.remove('d-none'); nav.style.display = ''; }
     if (fab) { fab.classList.remove('d-none'); fab.style.display = ''; }
 }
 
