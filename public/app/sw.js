@@ -1,18 +1,13 @@
 /* =========================================================
    PWA Service Worker - Gurukulam App Shell & Offline Cache
    ========================================================= */
-const CACHE_NAME = 'gurukulam-pwa-v8';
+const CACHE_NAME = 'gurukulam-pwa-v10';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './index.css?v=12',
-  './enhance.css?v=16',
-  './ai-chat.css?v=18',
-  './manage.css?v=3',
-  './cloud.js?v=9',
-  './logo.png',
-  './favicon.png',
   './manifest.json',
+  './favicon.png',
+  './logo.png',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap'
 ];
@@ -21,7 +16,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS_TO_CACHE).catch((err) => {
-        console.warn('PWA: Some assets could not be pre-cached', err);
+        console.warn('PWA: Pre-caching notice', err);
       });
     })
   );
@@ -34,7 +29,6 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
-            console.log('PWA: Clearing obsolete cache:', key);
             return caches.delete(key);
           }
         })

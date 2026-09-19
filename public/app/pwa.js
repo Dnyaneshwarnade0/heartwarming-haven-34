@@ -17,7 +17,9 @@
   // 2. Register Service Worker
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js', { scope: './' })
+      const swPath = location.pathname.startsWith('/app') ? './sw.js' : '/sw.js';
+      const swScope = location.pathname.startsWith('/app') ? './' : '/';
+      navigator.serviceWorker.register(swPath, { scope: swScope })
         .then((reg) => {
           // Immediately check for updates
           try { reg.update(); } catch (_) { }
