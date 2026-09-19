@@ -76,7 +76,7 @@
             <label for="username" data-key="lbl-username">Username</label>
             <div class="input-wrapper">
               <i class="fa-regular fa-user"></i>
-              <input type="text" id="username" placeholder="Enter username" autocomplete="username" style="padding-left: 44px !important;" required />
+              <input type="text" id="username" placeholder="Enter username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" style="padding-left: 44px !important;" required />
             </div>
           </div>
 
@@ -89,6 +89,9 @@
                 id="password"
                 placeholder="Enter password"
                 autocomplete="current-password"
+                autocapitalize="none"
+                autocorrect="off"
+                spellcheck="false"
                 style="width: 100%; padding-left: 44px !important; padding-right: 48px !important;"
                 required
               />
@@ -1506,6 +1509,6 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- cloud.js आधी क्लाऊडवरून डेटा आणतो, मग बाकीचे स्क्रिप्ट लोड करतो -->
-    <script src="cloud.js?v=18"></script>
+    <script src="cloud.js?v=19"></script>
   </body>
 </html>

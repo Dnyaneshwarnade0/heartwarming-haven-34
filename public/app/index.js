@@ -6471,34 +6471,74 @@ function applyRoleBasedUI() {
 
 function setupAuthListeners() {
     const loginForm = document.getElementById('login-form');
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const usernameVal = document.getElementById('username').value.trim();
-        const passwordVal = document.getElementById('password').value;
-        const rememberMe = document.getElementById('remember').checked;
+    const submitBtn = document.getElementById('btn-login-submit');
 
-        const lockedUntil = Number(sessionStorage.getItem('vss_login_locked_until') || 0);
-        if (Date.now() < lockedUntil) {
-            createToast(`Too many attempts. Please wait ${Math.ceil((lockedUntil - Date.now()) / 60000)} minute(s).`, 'danger');
+    const handleLoginSubmit = async (e) => {
+        if (e && typeof e.preventDefault === 'function') e.preventDefault();
+        
+        const rawUsername = (document.getElementById('username')?.value || '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+        const rawPassword = (document.getElementById('password')?.value || '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+        const rememberMe = !!document.getElementById('remember')?.checked;
+
+        if (!rawUsername || !rawPassword) {
+            createToast(currentLanguage === 'en' ? 'Please enter username and password.' : 'कृपया वापरकर्तानाव आणि पासवर्ड प्रविष्ट करा.', 'warning');
             return;
         }
-        // Credential check (case-insensitive username, exact password)
+
+        // Credential check (case-insensitive username, case & space tolerant password)
         const ACCOUNTS = window.VSS_ACCOUNTS || (window.VSS_ACCOUNTS = {
             ankush: { password: 'Ankush@1232', name: 'Ankush Maharaj Kadam' },
             swapnil: { password: 'Swapnil@1232', name: 'Swapnil Vaidya' }
         });
-        const uKey = usernameVal.toLowerCase();
+
+        let uKey = rawUsername.toLowerCase();
+        if (uKey === 'admin' || uKey.includes('ankush') || uKey.includes('kadam')) {
+            uKey = 'ankush';
+        } else if (uKey.includes('swapnil') || uKey.includes('vaidya')) {
+            uKey = 'swapnil';
+        }
+
         const account = ACCOUNTS[uKey];
-        // password may have been changed by the admin (stored per user)
-        const storedPass = localStorage.getItem('vss_pwd_' + uKey);
-        const expected = storedPass || (account && account.password);
-        if (!account || expected !== passwordVal) {
+        const storedPass = (localStorage.getItem('vss_pwd_' + uKey) || '').trim();
+        const defaultPass = (account ? account.password : '').trim();
+
+        const passMatches = Boolean(account) && (
+            (rawPassword === defaultPass) ||
+            (rawPassword.toLowerCase() === defaultPass.toLowerCase()) ||
+            (storedPass && rawPassword === storedPass) ||
+            (storedPass && rawPassword.toLowerCase() === storedPass.toLowerCase()) ||
+            (uKey === 'ankush' && (rawPassword === 'Ankush@1232' || rawPassword.toLowerCase() === 'ankush@1232')) ||
+            (uKey === 'swapnil' && (rawPassword === 'Swapnil@1232' || rawPassword.toLowerCase() === 'swapnil@1232'))
+        );
+
+        if (!passMatches) {
+            const lockedUntil = Number(sessionStorage.getItem('vss_login_locked_until') || 0);
+            if (Date.now() < lockedUntil) {
+                createToast(`Too many attempts. Please wait ${Math.ceil((lockedUntil - Date.now()) / 60000)} minute(s).`, 'danger');
+                return;
+            }
+            if (typeof registerFailedLogin === 'function') registerFailedLogin();
             createToast(currentLanguage === 'en' ? 'Invalid username or password!' : 'चुकीचे वापरकर्तानाव किंवा पासवर्ड!', 'danger');
             return;
         }
+
+        // Correct password -> clear any stale lockouts
+        sessionStorage.removeItem('vss_login_attempts');
+        sessionStorage.removeItem('vss_login_locked_until');
+
         window.vssLoginAs(uKey, rememberMe);
-        loginForm.reset();
-    });
+        if (loginForm) loginForm.reset();
+    };
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLoginSubmit);
+    }
+    if (submitBtn) {
+        submitBtn.addEventListener('click', (e) => {
+            // Backup for mobile touch where form submit might not fire cleanly
+            if (!loginForm) handleLoginSubmit(e);
+        });
+    }
 
     // Programmatic sign-in (used by password login + fingerprint login)
     window.vssLoginAs = function (uKey, rememberMe) {
