@@ -44,26 +44,6 @@
         });
       }
     </script>
-    <script>
-      window.vssDirectLogin = function(e) {
-        if (e && typeof e.preventDefault === 'function') e.preventDefault();
-        var uInput = document.getElementById('username');
-        var pInput = document.getElementById('password');
-        if (uInput) uInput.value = 'ankush';
-        if (pInput) pInput.value = 'Ankush@1232';
-        if (typeof window.vssLoginAs === 'function') {
-          window.vssLoginAs('ankush', true);
-        } else {
-          var t = setInterval(function() {
-            if (typeof window.vssLoginAs === 'function') {
-              clearInterval(t);
-              window.vssLoginAs('ankush', true);
-            }
-          }, 100);
-          setTimeout(function() { clearInterval(t); }, 6000);
-        }
-      };
-    </script>
     <!-- Stylesheet -->
     <link rel="stylesheet" href="index.css?v=13" />
     <link rel="stylesheet" href="enhance.css?v=17" />
@@ -145,16 +125,6 @@
 
           <button type="submit" class="btn-primary btn-block" id="btn-login-submit">
             <span data-key="btn-login">Sign In</span> <i class="fa-solid fa-arrow-right-to-bracket"></i>
-          </button>
-
-          <button
-            type="button"
-            class="btn-secondary btn-block"
-            id="btn-quick-login-ankush"
-            onclick="window.vssDirectLogin(event); return false;"
-            style="margin-top: 12px; background: #f0fdf4; color: #15803d; border: 2px solid #86efac; font-weight: 700; font-size: 0.98rem; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 12px; border-radius: 8px; box-shadow: 0 3px 8px rgba(22, 163, 74, 0.2);"
-          >
-            <i class="fa-solid fa-bolt" style="color: #16a34a; font-size: 1.15rem;"></i> <span>अंकुश महाराज (थेट १-क्लिक लॉगिन)</span>
           </button>
         </form>
 
@@ -1539,6 +1509,6 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- cloud.js आधी क्लाऊडवरून डेटा आणतो, मग बाकीचे स्क्रिप्ट लोड करतो -->
-    <script src="cloud.js?v=22"></script>
+    <script src="cloud.js?v=23"></script>
   </body>
 </html>

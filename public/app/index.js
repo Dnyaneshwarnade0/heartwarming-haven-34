@@ -6290,23 +6290,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupAdminProfileListener();
     updateLoginBiometricsUI();
 
-    // Check if session user already exists (remember me or 1-click direct login)
-    let hasActiveSession = false;
-    try {
-        const sess = JSON.parse(localStorage.getItem('vss_session_user') || 'null');
-        if (sess && (sess.username || sess.name)) {
-            currentUser = sess;
-            window.currentUser = currentUser;
-            hasActiveSession = true;
-        }
-    } catch (_) {}
-
-    if (hasActiveSession) {
-        launchApp();
-    } else {
-        currentUser = null;
-        showLoginScreen();
-    }
+    currentUser = null;
+    showLoginScreen();
 });
 
 // ==========================================
@@ -6494,7 +6479,6 @@ function applyRoleBasedUI() {
 function setupAuthListeners() {
     const loginForm = document.getElementById('login-form');
     const submitBtn = document.getElementById('btn-login-submit');
-    const quickAnkushBtn = document.getElementById('btn-quick-login-ankush');
 
     // Helper: Normalize Devanagari numerals and clean invisible spaces
     function cleanAuthInput(val) {
@@ -6502,20 +6486,6 @@ function setupAuthListeners() {
         const devanagariMap = { '०': '0', '१': '1', '२': '2', '३': '3', '४': '4', '५': '5', '६': '6', '७': '7', '८': '8', '९': '9' };
         let s = String(val).replace(/[०-९]/g, (d) => devanagariMap[d] || d);
         return s.replace(/[\u200B-\u200D\uFEFF\u00A0]/g, ' ').trim();
-    }
-
-    // Direct 1-Click Quick Login for Ankush Maharaj
-    if (quickAnkushBtn) {
-        quickAnkushBtn.addEventListener('click', (e) => {
-            if (e) e.preventDefault();
-            const uInput = document.getElementById('username');
-            const pInput = document.getElementById('password');
-            if (uInput) uInput.value = 'ankush';
-            if (pInput) pInput.value = 'Ankush@1232';
-            sessionStorage.removeItem('vss_login_attempts');
-            sessionStorage.removeItem('vss_login_locked_until');
-            window.vssLoginAs('ankush', true);
-        });
     }
 
     let isSubmitting = false;
