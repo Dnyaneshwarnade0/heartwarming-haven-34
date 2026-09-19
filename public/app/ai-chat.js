@@ -261,10 +261,20 @@ CORE BEHAVIOR RULES:
     function formatReply(raw) {
         if (!raw) return '';
         let out = raw.replace(/```(options|action)[\s\S]*?```/g, '').trim();
+        const images = [];
+        out = out.replace(/!\[(.*?)\]\((https?:\/\/.*?)\)/g, (match, alt, url) => {
+            const idx = images.length;
+            images.push({ alt, url });
+            return `###IMG_${idx}###`;
+        });
         out = esc(out);
         out = out.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
         out = out.replace(/\*(.+?)\*/g, '<i>$1</i>');
         out = out.replace(/\n/g, '<br>');
+        images.forEach((img, idx) => {
+            const imgHtml = `<div style="text-align:center;margin:10px 0;"><img src="${img.url}" alt="${esc(img.alt)}" style="width:84px;height:84px;border-radius:50%;object-fit:cover;border:3px solid #F59E0B;box-shadow:0 4px 10px rgba(0,0,0,0.18);display:inline-block;" onerror="this.parentElement.style.display='none'"></div>`;
+            out = out.replace(`###IMG_${idx}###`, imgHtml);
+        });
         return out;
     }
 
@@ -368,6 +378,152 @@ CORE BEHAVIOR RULES:
                 renderMessages(false);
             }, 200);
             return;
+        }
+
+        // Helper: Extract roll number from any format (English & Devanagari numerals)
+        const extractRollNo = (str) => {
+            if (!str) return null;
+            const dev = ['०','१','२','३','४','५','६','७','८','९'];
+            let s = String(str).trim();
+            for (let i = 0; i < 10; i++) s = s.split(dev[i]).join(String(i));
+
+            let m = s.match(/^(\d{1,3})$/);
+            if (m) return parseInt(m[1], 10);
+
+            m = s.match(/^(\d{1,3})\s*[\(-]/);
+            if (m) return parseInt(m[1], 10);
+
+            m = s.match(/(?:roll\s*(?:no|number)?|हजेरी\s*क्र(?:मांक)?|क्रमांक|नंबर)\s*[:.-]?\s*(\d{1,3})/i);
+            if (m) return parseInt(m[1], 10);
+
+            m = s.match(/(?:^|\s)(\d{1,2})\s*(?:number|no|नंबर|ची|चे|चा|च्या|ला|गुण|निकाल|माहिती|chi|che|cha)/i);
+            if (m) return parseInt(m[1], 10);
+
+            return null;
+        };
+
+        const rNum = extractRollNo(query);
+        const isMenuEmoji = /^[1-9]️⃣|🔟|📊|🎓|🧾|📝|🏠|📚|✏️/.test(query);
+        const isWriteAction = /(?:add|करा|जमा|नोंदवा)\s*(?:complaint|fee|remark|medical|तक्रार|फी|शेरा)/i.test(query) ||
+                              /(?:तक्रार|फी|शेरा|नोंद)\s*(?:करा|नोंदवा|घ्या|जमा)/i.test(query);
+
+        // 2. Rule: Roll Number Entered -> Show ALL Student Details
+        if (rNum && !isMenuEmoji && !isWriteAction) {
+            if (rNum < 1 || rNum > 72) {
+                const notFoundReply = `❌ हजेरी क्रमांक (Roll No.) **${rNum}** गुरुकुलाच्या विद्यार्थी यादीत उपलब्ध नाही.\n\nगुरुकुलामध्ये सध्या **१ ते ७२** हजेरी क्रमांक असलेले विद्यार्थी आहेत. कृपया १ ते ७२ मधील हजेरी क्रमांक टाका.\n\n\`\`\`options\n["१ (अवधूत गाडेकर)", "२ (यश खरात)", "११ (संगम तोडकर)", "१५ (लक्की बाघुल)", "३५ (वेदांत गव्हाणे)", "🏠 मुख्य मेनू"]\n\`\`\``;
+                setTimeout(() => {
+                    history.push({ role: 'assistant', content: notFoundReply });
+                    saveHistory();
+                    renderMessages(false);
+                }, 200);
+                return;
+            }
+
+            const stu = students().find((s) => Number(s.rollNo) === rNum);
+            if (stu) {
+                const stuNameMr = (stu.name && stu.name.mr) ? stu.name.mr : (typeof stu.name === 'string' ? stu.name : 'नाव नाही');
+                const stuNameEn = (stu.name && stu.name.en) ? stu.name.en : '';
+
+                // 1. Fees
+                const fees = stu.fees || {};
+                const totalFees = Number(fees.totalFees || fees.total || 35000);
+                const paidFees = Number(fees.paidAmount || fees.paid || 0);
+                const balance = totalFees - paidFees;
+                const feeStatus = balance <= 0 ? '✅ पूर्ण भरली (NIL Due)' : `⚠️ शिल्लक ₹${balance.toLocaleString('en-IN')}`;
+
+                // 2. Attendance
+                const att = sessionStats(stu);
+                const mornStr = att.morningPct != null ? `${att.morningPct}%` : 'नोंद नाही';
+                const schStr = att.schoolPct != null ? `${att.schoolPct}%` : 'नोंद नाही';
+                const eveStr = att.eveningPct != null ? `${att.eveningPct}%` : 'नोंद नाही';
+                const ovrStr = att.overallPct != null ? `${att.overallPct}%` : 'नोंद नाही';
+
+                // 3. Weekly Marks
+                const wkMarks = getStudentWeeklyMarks(stu.id);
+                const marksLines = wkMarks.length ? wkMarks.map((w) => `  • **${w.name}:** ${w.marks != null ? `**${w.marks}** / ${w.max} (${Math.round((w.marks/w.max)*100)}%)` : 'अनुपस्थित / नोंद नाही'}`).join('\n') : '  • कोणत्याही परीक्षेची नोंद नाही';
+                const valid = wkMarks.filter((w) => w.marks !== null);
+                const avg = valid.length ? Math.round(valid.reduce((acc, x) => acc + x.marks, 0) / valid.length) : null;
+                const rating = avg != null ? (avg >= 80 ? '🌟 उत्कृष्ट (Good)' : avg >= 50 ? '👍 मध्यम (Average)' : '⚠️ सुधारणा हवी (Needs Improvement)') : 'नोंद नाही';
+
+                // 4. Complaints
+                const cmps = stu.complaints || [];
+                let cmpSection = '';
+                if (cmps.length === 0) {
+                    cmpSection = '  • ✅ कोणतीही तक्रार किंवा गैरशिस्त नोंद नाही. शिस्त समाधानकारक आहे.';
+                } else {
+                    cmpSection = cmps.map((c, i) => `  ${i + 1}. 📅 **${c.date || 'तारीख नाही'}:** ${c.type || 'सामान्य'} (${c.severity || 'सामान्य'})\n     👉 **कारवाई:** ${c.action || 'नोंद नाही'}`).join('\n');
+                }
+
+                // 5. Remarks
+                const rems = stu.remarks || [];
+                const remSection = rems.length ? rems.map((r, i) => `  ${i + 1}. 📅 ${r.date || ''}: ${r.text || r.remark || ''}`).join('\n') : '  • कोणताही विशेष शेरा नाही.';
+
+                // 6. Medical
+                const med = stu.medical || {};
+                const blood = med.bloodGroup || 'नोंद नाही';
+                const illness = med.illness || med.allergies || 'निरोगी / उत्तम';
+
+                // 7. Photo
+                const photoUrl = stu.photo || stu.photoUrl || '';
+                const photoMarkdown = photoUrl ? `![${stuNameMr}](${photoUrl})\n` : '';
+
+                // Open student profile and graph in software UI
+                if (typeof window.renderStudentProfile === 'function') {
+                    setTimeout(() => {
+                        try {
+                            window.renderStudentProfile(stu.id);
+                            setTimeout(() => {
+                                const pBtn = document.querySelector('#panel-student-profile .profile-tabs-card .profile-tab-btn[data-tab="tab-progress"]');
+                                if (pBtn) pBtn.click();
+                            }, 250);
+                        } catch (_) {}
+                    }, 150);
+                }
+
+                const studentDetailsReply = `${photoMarkdown}👤 **विद्यार्थी संपूर्ण तपशील (Roll No. ${stu.rollNo})**
+
+📋 **वैयक्तिक माहिती:**
+• **नाव:** **${stuNameMr}** ${stuNameEn ? `(${stuNameEn})` : ''}
+• **हजेरी क्रमांक (Roll No.):** **${stu.rollNo}**
+• **इयत्ता:** **${stu.standard || '५'} वी**
+• **पालकांचे नाव:** ${stu.parentName || 'नोंद नाही'}
+• **पालक संपर्क:** 📞 ${stu.phone || stu.emergencyContact || 'नोंद नाही'}
+• **पत्ता (गाव/जिल्हा):** 📍 ${stu.address || 'नोंद नाही'}
+
+💰 **फी तपशील (Fees):**
+• एकूण फी: **₹${totalFees.toLocaleString('en-IN')}**
+• भरलेली फी: **₹${paidFees.toLocaleString('en-IN')}**
+• शिल्लक फी: **${feeStatus}**
+
+📊 **हजेरी अहवाल (Attendance):**
+• सकाळ: **${mornStr}** | शाळा: **${schStr}** | संध्याकाळ: **${eveStr}**
+• **एकूण सरासरी उपस्थिती:** **${ovrStr}**
+
+📈 **साप्ताहिक परीक्षा निकाल (हप्ता १ ते ९):**
+${marksLines}
+${avg != null ? `\n🎯 **एकूण सरासरी गुण:** **${avg}%** (${rating})\n` : ''}
+⚠️ **तक्रारी व गैरशिस्त नोंदी (${cmps.length}):**
+${cmpSection}
+
+📝 **शिक्षकांचे शेरे (Remarks):**
+${remSection}
+
+🏥 **वैद्यकीय माहिती:**
+• रक्तगट: **${blood}** | प्रकृती: **${illness}**
+
+✅ *सॉफ्टवेअरमध्ये **${stuNameMr}** यांचे संपूर्ण प्रोफाईल व **साप्ताहिक गुणांचा आलेख (Graph)** उघडला आहे.*
+
+\`\`\`options
+["📝 ${stu.rollNo} ची तक्रार नोंदवा", "💵 ${stu.rollNo} ची फी जमा करा", "🧾 ${stu.rollNo} ची फी पावती", "दुसरा रोल नंबर शोधा", "🏠 मुख्य मेनू"]
+\`\`\``;
+
+                setTimeout(() => {
+                    history.push({ role: 'assistant', content: studentDetailsReply });
+                    saveHistory();
+                    renderMessages(false);
+                }, 200);
+                return;
+            }
         }
 
         // Telegram Bot Menu Handlers
