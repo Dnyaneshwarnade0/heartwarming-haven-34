@@ -10,8 +10,14 @@ const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data', 'vss-students-backup.json');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AQ.Ab8RN6JFHBwrC_cd_QB3NYZZjaPefD4CR-cIBMYahIYViDGqtA';
-const DEFAULT_MODEL = 'gemini-flash-latest';
-const FALLBACK_MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-3.1-flash-lite', 'gemini-3.5-flash-lite', 'gemini-2.5-flash'];
+const DEFAULT_MODEL = 'gemini-3.1-flash-lite';
+const FALLBACK_MODELS = [
+  'gemini-3.1-flash-lite',
+  'gemini-3.5-flash-lite',
+  'gemini-flash-lite-latest',
+  'gemini-2.5-flash',
+  'gemini-flash-latest'
+];
 
 const SYSTEM_PROMPT = `You are "गुरुकुल सहाय्यक", the built-in AI assistant of a Marathi school student-management app (शांतीब्रह्म गुरुकुलम - श्री क्षेत्र राक्षसभुवन).
 Your name is "स्वप्निल बॉट". The administrator and head of the gurukul is "अंकुश महाराज".
@@ -256,7 +262,11 @@ async function callGemini(messages, context, key, modelName) {
     systemInstruction: {
       parts: [{ text: sysText }]
     },
-    contents: contents
+    contents: contents,
+    generationConfig: {
+      temperature: 0.2,
+      maxOutputTokens: 1000
+    }
   };
 
   let lastError = null;
@@ -266,7 +276,8 @@ async function callGemini(messages, context, key, modelName) {
       const resp = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(5000)
       });
 
       if (resp.ok) {
@@ -417,9 +428,10 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, '127.0.0.1', () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`====================================================`);
   console.log(`[VSS-SERVER] Server running at http://localhost:${PORT}/app/index.html`);
+  console.log(`[VSS-SERVER] Network access: http://10.44.196.216:${PORT}/app/index.html`);
   console.log(`[VSS-SERVER] AI Chat active with Gemini API!`);
   console.log(`====================================================`);
 });
