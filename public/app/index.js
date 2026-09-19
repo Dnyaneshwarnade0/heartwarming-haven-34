@@ -6272,9 +6272,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (_) { }
     };
     
-    // Shared school computers must always begin at the sign-in screen.
-    currentUser = null;
-    showLoginScreen();
+    // Check if session user already exists (remember me or 1-click direct login)
+    let hasActiveSession = false;
+    try {
+        const sess = JSON.parse(localStorage.getItem('vss_session_user') || 'null');
+        if (sess && (sess.username || sess.name)) {
+            currentUser = sess;
+            window.currentUser = currentUser;
+            hasActiveSession = true;
+        }
+    } catch (_) {}
+
+    if (hasActiveSession) {
+        launchApp();
+    } else {
+        currentUser = null;
+        showLoginScreen();
+    }
 
     setupTranslationListeners();
     setupAuthListeners();
@@ -6381,8 +6395,11 @@ function updatePageTitle() {
 // 6. AUTHENTICATION CONTROLLERS
 // ==========================================
 function showLoginScreen() {
-    document.getElementById('auth-container').classList.remove('d-none');
-    document.getElementById('app-container').classList.add('d-none');
+    document.documentElement.classList.remove('vss-auto-logged-in');
+    const auth = document.getElementById('auth-container');
+    const app = document.getElementById('app-container');
+    if (auth) { auth.classList.remove('d-none'); auth.style.display = ''; }
+    if (app) { app.classList.add('d-none'); app.style.display = 'none'; }
     document.getElementById('mobile-bottom-nav')?.classList.add('d-none');
     const fab = document.getElementById('ai-chat-fab');
     if (fab) { fab.classList.add('d-none'); fab.style.display = 'none'; }
@@ -6391,9 +6408,13 @@ function showLoginScreen() {
 }
 
 function hideLoginScreen() {
-    document.getElementById('auth-container').classList.add('d-none');
-    document.getElementById('app-container').classList.remove('d-none');
-    document.getElementById('mobile-bottom-nav')?.classList.remove('d-none');
+    document.documentElement.classList.add('vss-auto-logged-in');
+    const auth = document.getElementById('auth-container');
+    const app = document.getElementById('app-container');
+    if (auth) { auth.classList.add('d-none'); auth.style.display = 'none'; }
+    if (app) { app.classList.remove('d-none'); app.style.display = 'block'; }
+    const nav = document.getElementById('mobile-bottom-nav');
+    if (nav) { nav.classList.remove('d-none'); nav.style.display = 'flex'; }
     const fab = document.getElementById('ai-chat-fab');
     if (fab) { fab.classList.remove('d-none'); fab.style.display = ''; }
 }
@@ -6622,7 +6643,10 @@ function setupAuthListeners() {
     // Logout
     document.getElementById('btn-logout').addEventListener('click', () => {
         currentUser = null;
+        window.currentUser = null;
         localStorage.removeItem('vss_session_user');
+        localStorage.removeItem('vss_last_user');
+        document.documentElement.classList.remove('vss-auto-logged-in');
         showLoginScreen();
         createToast(currentLanguage === 'en' ? 'Logged out successfully.' : 'यशस्वीरित्या लॉगआउट झाले.', 'info');
     });

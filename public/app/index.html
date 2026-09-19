@@ -44,6 +44,58 @@
         });
       }
     </script>
+    <style>
+      html.vss-auto-logged-in #auth-container { display: none !important; }
+      html.vss-auto-logged-in #app-container { display: block !important; }
+      html.vss-auto-logged-in #mobile-bottom-nav { display: flex !important; }
+      html.vss-auto-logged-in #ai-chat-fab { display: flex !important; }
+    </style>
+    <script>
+      (function() {
+        try {
+          var s = JSON.parse(localStorage.getItem('vss_session_user') || 'null');
+          if (s && (s.username || s.name)) {
+            document.documentElement.classList.add('vss-auto-logged-in');
+          }
+        } catch (_) {}
+      })();
+      window.vssDirectLogin = function(e) {
+        if (e) {
+          if (typeof e.preventDefault === 'function') e.preventDefault();
+          if (typeof e.stopPropagation === 'function') e.stopPropagation();
+        }
+        var u = { username: 'ankush', name: 'अंकुश महाराज कदम', role: 'admin' };
+        try {
+          localStorage.setItem('vss_session_user', JSON.stringify(u));
+          localStorage.setItem('vss_last_user', 'ankush');
+          sessionStorage.removeItem('vss_login_attempts');
+          sessionStorage.removeItem('vss_login_locked_until');
+        } catch (_) {}
+        document.documentElement.classList.add('vss-auto-logged-in');
+        window.currentUser = u;
+        if (typeof currentUser !== 'undefined') currentUser = u;
+
+        var auth = document.getElementById('auth-container');
+        var app = document.getElementById('app-container');
+        var nav = document.getElementById('mobile-bottom-nav');
+        var fab = document.getElementById('ai-chat-fab');
+        if (auth) { auth.classList.add('d-none'); auth.style.setProperty('display', 'none', 'important'); }
+        if (app) { app.classList.remove('d-none'); app.style.setProperty('display', 'block', 'important'); }
+        if (nav) { nav.classList.remove('d-none'); nav.style.setProperty('display', 'flex', 'important'); }
+        if (fab) { fab.classList.remove('d-none'); fab.style.setProperty('display', 'flex', 'important'); }
+
+        if (typeof launchApp === 'function') {
+          try { launchApp(); } catch (_) {}
+        } else if (typeof window.vssLoginAs === 'function') {
+          try { window.vssLoginAs('ankush', true); } catch (_) {}
+        }
+        setTimeout(function() {
+          if (typeof launchApp === 'function') {
+            try { launchApp(); } catch (_) {}
+          }
+        }, 400);
+      };
+    </script>
     <!-- Stylesheet -->
     <link rel="stylesheet" href="index.css?v=13" />
     <link rel="stylesheet" href="enhance.css?v=17" />
@@ -131,9 +183,10 @@
             type="button"
             class="btn-secondary btn-block"
             id="btn-quick-login-ankush"
-            style="margin-top: 10px; background: #f0fdf4; color: #15803d; border: 1.5px solid #86efac; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;"
+            onclick="window.vssDirectLogin(event); return false;"
+            style="margin-top: 12px; background: #f0fdf4; color: #15803d; border: 2px solid #86efac; font-weight: 700; font-size: 0.98rem; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; padding: 12px; border-radius: 8px; box-shadow: 0 3px 8px rgba(22, 163, 74, 0.2);"
           >
-            <i class="fa-solid fa-bolt" style="color: #16a34a;"></i> <span>अंकुश महाराज (थेट १-क्लिक लॉगिन)</span>
+            <i class="fa-solid fa-bolt" style="color: #16a34a; font-size: 1.15rem;"></i> <span>अंकुश महाराज (थेट १-क्लिक लॉगिन)</span>
           </button>
         </form>
 
@@ -1518,6 +1571,6 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- cloud.js आधी क्लाऊडवरून डेटा आणतो, मग बाकीचे स्क्रिप्ट लोड करतो -->
-    <script src="cloud.js?v=20"></script>
+    <script src="cloud.js?v=21"></script>
   </body>
 </html>
