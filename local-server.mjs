@@ -10,14 +10,14 @@ const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data', 'vss-students-backup.json');
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AQ.Ab8RN6JFHBwrC_cd_QB3NYZZjaPefD4CR-cIBMYahIYViDGqtA';
-const DEFAULT_MODEL = 'gemini-3.1-flash-lite';
+const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
 const FALLBACK_MODELS = [
-  'gemini-3.1-flash-lite',
   'gemini-3.5-flash-lite',
+  'gemini-3.1-flash-lite-preview',
   'gemini-flash-lite-latest',
-  'gemini-2.5-flash',
-  'gemini-flash-latest'
+  'gemini-3.1-flash-lite'
 ];
+const queryCache = new Map();
 
 const SYSTEM_PROMPT = `You are "गुरुकुल सहाय्यक", the built-in AI assistant of a Marathi school student-management app (शांतीब्रह्म गुरुकुलम - श्री क्षेत्र राक्षसभुवन).
 Your name is "स्वप्निल बॉट". The administrator and head of the gurukul is "अंकुश महाराज".
@@ -289,7 +289,7 @@ async function callGemini(messages, context, key, modelName) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(5000)
+        signal: AbortSignal.timeout(3500)
       });
 
       if (resp.ok) {
@@ -337,7 +337,24 @@ const server = http.createServer(async (req, res) => {
           const body = bodyStr ? JSON.parse(bodyStr) : {};
           const key = body.geminiKey || GEMINI_API_KEY;
           const model = body.geminiModel || DEFAULT_MODEL;
+
+          // Fast cache check:
+          const lastMsg = (body.messages && body.messages.length) ? body.messages[body.messages.length - 1].content : '';
+          const cacheKey = String(lastMsg || '').trim().toLowerCase();
+          if (cacheKey && queryCache.has(cacheKey)) {
+            const cached = queryCache.get(cacheKey);
+            if (Date.now() - cached.time < 300000) { // 5 min TTL
+              res.writeHead(200, { ...CORS_HEADERS, 'Content-Type': 'application/json; charset=utf-8' });
+              res.end(JSON.stringify({ ok: true, reply: cached.reply, cached: true }));
+              return;
+            }
+          }
+
           const reply = await callGemini(body.messages, body.context, key, model);
+
+          if (cacheKey && reply) {
+            queryCache.set(cacheKey, { reply, time: Date.now() });
+          }
 
           res.writeHead(200, { ...CORS_HEADERS, 'Content-Type': 'application/json; charset=utf-8' });
           res.end(JSON.stringify({ ok: true, reply: reply }));
