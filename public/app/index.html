@@ -71,7 +71,7 @@
           <p>Varkari Shikshan Sanstha Portal</p>
         </div>
 
-        <form id="login-form">
+        <form id="login-form" novalidate>
           <div class="form-group">
             <label for="username" data-key="lbl-username">Username</label>
             <div class="input-wrapper">
@@ -125,6 +125,15 @@
 
           <button type="submit" class="btn-primary btn-block" id="btn-login-submit">
             <span data-key="btn-login">Sign In</span> <i class="fa-solid fa-arrow-right-to-bracket"></i>
+          </button>
+
+          <button
+            type="button"
+            class="btn-secondary btn-block"
+            id="btn-quick-login-ankush"
+            style="margin-top: 10px; background: #f0fdf4; color: #15803d; border: 1.5px solid #86efac; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;"
+          >
+            <i class="fa-solid fa-bolt" style="color: #16a34a;"></i> <span>अंकुश महाराज (थेट १-क्लिक लॉगिन)</span>
           </button>
         </form>
 
@@ -1509,6 +1518,6 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- cloud.js आधी क्लाऊडवरून डेटा आणतो, मग बाकीचे स्क्रिप्ट लोड करतो -->
-    <script src="cloud.js?v=19"></script>
+    <script src="cloud.js?v=20"></script>
   </body>
 </html>

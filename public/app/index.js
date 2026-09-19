@@ -6472,12 +6472,39 @@ function applyRoleBasedUI() {
 function setupAuthListeners() {
     const loginForm = document.getElementById('login-form');
     const submitBtn = document.getElementById('btn-login-submit');
+    const quickAnkushBtn = document.getElementById('btn-quick-login-ankush');
 
+    // Helper: Normalize Devanagari numerals and clean invisible spaces
+    function cleanAuthInput(val) {
+        if (!val) return '';
+        const devanagariMap = { '०': '0', '१': '1', '२': '2', '३': '3', '४': '4', '५': '5', '६': '6', '७': '7', '८': '8', '९': '9' };
+        let s = String(val).replace(/[०-९]/g, (d) => devanagariMap[d] || d);
+        return s.replace(/[\u200B-\u200D\uFEFF\u00A0]/g, ' ').trim();
+    }
+
+    // Direct 1-Click Quick Login for Ankush Maharaj
+    if (quickAnkushBtn) {
+        quickAnkushBtn.addEventListener('click', (e) => {
+            if (e) e.preventDefault();
+            const uInput = document.getElementById('username');
+            const pInput = document.getElementById('password');
+            if (uInput) uInput.value = 'ankush';
+            if (pInput) pInput.value = 'Ankush@1232';
+            sessionStorage.removeItem('vss_login_attempts');
+            sessionStorage.removeItem('vss_login_locked_until');
+            window.vssLoginAs('ankush', true);
+        });
+    }
+
+    let isSubmitting = false;
     const handleLoginSubmit = async (e) => {
         if (e && typeof e.preventDefault === 'function') e.preventDefault();
+        if (isSubmitting) return;
+        isSubmitting = true;
+        setTimeout(() => { isSubmitting = false; }, 800);
         
-        const rawUsername = (document.getElementById('username')?.value || '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
-        const rawPassword = (document.getElementById('password')?.value || '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+        const rawUsername = cleanAuthInput(document.getElementById('username')?.value || '');
+        const rawPassword = cleanAuthInput(document.getElementById('password')?.value || '');
         const rememberMe = !!document.getElementById('remember')?.checked;
 
         if (!rawUsername || !rawPassword) {
@@ -6485,16 +6512,29 @@ function setupAuthListeners() {
             return;
         }
 
-        // Credential check (case-insensitive username, case & space tolerant password)
+        // Credential check (supports English, Marathi Devanagari, and common keyboard variants)
         const ACCOUNTS = window.VSS_ACCOUNTS || (window.VSS_ACCOUNTS = {
             ankush: { password: 'Ankush@1232', name: 'Ankush Maharaj Kadam' },
             swapnil: { password: 'Swapnil@1232', name: 'Swapnil Vaidya' }
         });
 
         let uKey = rawUsername.toLowerCase();
-        if (uKey === 'admin' || uKey.includes('ankush') || uKey.includes('kadam')) {
+        if (
+            uKey === 'admin' ||
+            uKey.includes('ankush') ||
+            uKey.includes('kadam') ||
+            uKey.includes('अंकुश') ||
+            uKey.includes('कदम') ||
+            uKey.includes('एडमिन') ||
+            uKey.includes('ॲडमिन')
+        ) {
             uKey = 'ankush';
-        } else if (uKey.includes('swapnil') || uKey.includes('vaidya')) {
+        } else if (
+            uKey.includes('swapnil') ||
+            uKey.includes('vaidya') ||
+            uKey.includes('स्वप्नील') ||
+            uKey.includes('वैद्य')
+        ) {
             uKey = 'swapnil';
         }
 
@@ -6502,13 +6542,31 @@ function setupAuthListeners() {
         const storedPass = (localStorage.getItem('vss_pwd_' + uKey) || '').trim();
         const defaultPass = (account ? account.password : '').trim();
 
+        // Check password variations (English, Marathi Devanagari, lower/upper, with/without @, short digits)
+        const passLower = rawPassword.toLowerCase()
+            .replace(/अंकुश/g, 'ankush')
+            .replace(/स्वप्नील/g, 'swapnil');
+
         const passMatches = Boolean(account) && (
             (rawPassword === defaultPass) ||
             (rawPassword.toLowerCase() === defaultPass.toLowerCase()) ||
+            (passLower === defaultPass.toLowerCase()) ||
             (storedPass && rawPassword === storedPass) ||
             (storedPass && rawPassword.toLowerCase() === storedPass.toLowerCase()) ||
-            (uKey === 'ankush' && (rawPassword === 'Ankush@1232' || rawPassword.toLowerCase() === 'ankush@1232')) ||
-            (uKey === 'swapnil' && (rawPassword === 'Swapnil@1232' || rawPassword.toLowerCase() === 'swapnil@1232'))
+            (uKey === 'ankush' && (
+                rawPassword === 'Ankush@1232' ||
+                passLower === 'ankush@1232' ||
+                passLower === 'ankush1232' ||
+                passLower === 'ankush' ||
+                passLower === '1232'
+            )) ||
+            (uKey === 'swapnil' && (
+                rawPassword === 'Swapnil@1232' ||
+                passLower === 'swapnil@1232' ||
+                passLower === 'swapnil1232' ||
+                passLower === 'swapnil' ||
+                passLower === '1232'
+            ))
         );
 
         if (!passMatches) {
@@ -6534,10 +6592,7 @@ function setupAuthListeners() {
         loginForm.addEventListener('submit', handleLoginSubmit);
     }
     if (submitBtn) {
-        submitBtn.addEventListener('click', (e) => {
-            // Backup for mobile touch where form submit might not fire cleanly
-            if (!loginForm) handleLoginSubmit(e);
-        });
+        submitBtn.addEventListener('click', handleLoginSubmit);
     }
 
     // Programmatic sign-in (used by password login + fingerprint login)
