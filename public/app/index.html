@@ -47,7 +47,7 @@
     <!-- Stylesheet -->
     <link rel="stylesheet" href="index.css?v=12" />
     <link rel="stylesheet" href="enhance.css?v=17" />
-    <link rel="stylesheet" href="ai-chat.css?v=18" />
+    <link rel="stylesheet" href="ai-chat.css?v=19" />
     <link rel="stylesheet" href="manage.css?v=3" />
     <link rel="stylesheet" href="pwa.css?v=1" />
   </head>
@@ -1055,11 +1055,12 @@
                   </div>
                 </div>
                 <div class="bot-header-actions">
+                  <button type="button" class="btn-bot-delete-history" id="btn-bot-clear" title="चॅट इतिहास हटवा (Delete Chat History)">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>इतिहास हटवा</span>
+                  </button>
                   <button type="button" class="btn-bot-action" id="btn-bot-key" title="API Key (Gemini)">
                     <i class="fa-solid fa-key"></i>
-                  </button>
-                  <button type="button" class="btn-bot-action" id="btn-bot-clear" title="Clear Chat">
-                    <i class="fa-solid fa-broom"></i>
                   </button>
                 </div>
               </div>
@@ -1467,9 +1468,18 @@
     <!-- Toast system container -->
     <div id="toast-container" class="toast-wrapper"></div>
 
+    <!-- ======================================================== -->
+    <!-- FLOATING AI BOT BUTTON (App Right Corner Launcher) -->
+    <!-- ======================================================== -->
+    <button type="button" id="ai-chat-fab" class="floating-bot-btn" title="गुरुकुल AI बॉट उघडा">
+      <div class="floating-bot-badge">AI</div>
+      <i class="fa-solid fa-robot"></i>
+      <span class="floating-bot-text">बॉट</span>
+    </button>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- cloud.js आधी क्लाऊडवरून डेटा आणतो, मग बाकीचे स्क्रिप्ट लोड करतो -->
-    <script src="cloud.js?v=16"></script>
+    <script src="cloud.js?v=17"></script>
   </body>
 </html>

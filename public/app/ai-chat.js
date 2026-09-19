@@ -417,6 +417,14 @@ CORE BEHAVIOR RULES:
             return TELEGRAM_GREETING_REPLY;
         }
 
+        // 1b. Clear History Command
+        if (/^(clear|delete|delete history|इतिहास हटवा|चॅट हटवा|clear chat|इतिहास मिटवा|history delete)$/i.test(lower)) {
+            history = [];
+            try { localStorage.removeItem(HKEY); } catch (_) { }
+            setTimeout(() => renderMessages(false), 50);
+            return `🗑️ **चॅट इतिहास हटवला आहे.**\n\n🙏 **राम कृष्ण हरी, अंकुश महाराज!** खालीलपैकी पर्याय निवडा:\n\n\`\`\`options\n${JSON.stringify(TELEGRAM_MENU_OPTIONS)}\n\`\`\``;
+        }
+
         const rNum = extractRollNo(query);
 
         // 2. Write Action: Add Complaint
@@ -1128,11 +1136,26 @@ ${remSection}
 
         if (btnClear) {
             btnClear.onclick = () => {
-                if (confirm(t('सर्व चॅट इतिहास हटवायचा का?', 'Clear all chat history?'))) {
+                if (confirm('सर्व चॅट इतिहास हटवायचा का? (Clear all chat history?)')) {
                     history = [];
+                    try { localStorage.removeItem(HKEY); } catch (_) { }
                     saveHistory();
                     renderMessages(false);
+                    if (typeof showToast === 'function') {
+                        showToast('✅ चॅट इतिहास यशस्वीरित्या हटवला!', 'success');
+                    }
                 }
+            };
+        }
+
+        const fab = document.getElementById('ai-chat-fab');
+        if (fab) {
+            fab.onclick = () => {
+                if (typeof switchPanel === 'function') {
+                    switchPanel('panel-bot');
+                }
+                const inp = document.getElementById('bot-input-text');
+                if (inp) setTimeout(() => inp.focus(), 150);
             };
         }
 

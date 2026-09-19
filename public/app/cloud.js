@@ -25,7 +25,7 @@
         'vss_default_subjects', 'vss_holidays'
     ];
     var SCRIPTS = [
-        'index.js?v=17', 'enhance.js?v=19', 'ai-chat.js?v=30', 'ai-actions.js?v=3', 'security.js?v=1',
+        'index.js?v=17', 'enhance.js?v=19', 'ai-chat.js?v=31', 'ai-actions.js?v=3', 'security.js?v=1',
         'telegram.js?v=6', 'records.js?v=1', 'manage.js?v=3',
         'manage2.js?v=1', 'manage3.js?v=1', 'pwa.js?v=1',
         'state-seed.js?v=1', 'students-data.js?v=1', 'students-seed.js?v=2',
