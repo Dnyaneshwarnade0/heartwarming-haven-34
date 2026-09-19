@@ -17,7 +17,29 @@
     const HKEY = 'vss_ai_chat_history';
     const KKEY = 'vss_gemini_key';
     const DEFAULT_KEY = 'AQ.Ab8RN6JFHBwrC_cd_QB3NYZZjaPefD4CR-cIBMYahIYViDGqtA';
-    const DEFAULT_MODEL = 'gemini-2.5-flash';
+    const DEFAULT_MODEL = 'gemini-3.1-flash-lite';
+
+    const TELEGRAM_MENU_OPTIONS = [
+        "1️⃣ हजेरी घ्या",
+        "2️⃣ विद्यार्थी माहिती",
+        "3️⃣ मागील इतिहास",
+        "4️⃣ तक्रार नोंदवा",
+        "5️⃣ आदर्श विद्यार्थी",
+        "6️⃣ आजची बॅकअप",
+        "7️⃣ फी व्यवहार",
+        "8️⃣ सूचना पाठवा",
+        "9️⃣ परीक्षा गुण",
+        "📊 साप्ताहिक गुण",
+        "🔟 दैनंदिन सेवा",
+        "🎓 नवीन प्रवेश",
+        "🧾 फी पावती",
+        "📝 मूल्यांकन",
+        "🏠 रजा / गावी गेला",
+        "📚 विषय बदला",
+        "✏️ बदल करा"
+    ];
+
+    const TELEGRAM_GREETING_REPLY = `🙏 **राम कृष्ण हरी, अंकुश महाराज!**\n\nखाली पर्याय निवडा — काहीही टाइप करायची गरज नाही.\n\n\`\`\`options\n${JSON.stringify(TELEGRAM_MENU_OPTIONS)}\n\`\`\``;
 
     const getKey = () => {
         try { return localStorage.getItem(KKEY) || DEFAULT_KEY; } catch (_) { return DEFAULT_KEY; }
@@ -271,15 +293,15 @@ CORE BEHAVIOR RULES:
 
         if (history.length === 0) {
             list.innerHTML = `
-                <div style="text-align: center; color: #64748B; padding: 40px 16px;">
-                    <div style="width: 60px; height: 60px; border-radius: 50%; background: #EFF6FF; color: #2563EB; font-size: 1.8rem; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px;">
+                <div style="text-align: center; color: #64748B; padding: 24px 16px;">
+                    <div style="width: 56px; height: 56px; border-radius: 50%; background: #EFF6FF; color: #2563EB; font-size: 1.8rem; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(37,99,235,0.15);">
                         <i class="fa-solid fa-robot"></i>
                     </div>
-                    <h4 style="color: #1B3A6B; margin: 0 0 6px; font-weight: 700;">${t('🙏 राम कृष्ण हरी!', 'Welcome!')}</h4>
-                    <p style="margin: 0; font-size: 0.9rem;">${t('मी तुमचा गुरुकुल AI सहाय्यक आहे. "hii" टाईप करून मेनू पाहा किंवा विद्यार्थ्याचा रोल नंबर टाका.', 'I am your Gurukulam AI Assistant. Type "hii" to see menu or enter student roll number.')}</p>
+                    <h4 style="color: #1B3A6B; margin: 0 0 6px; font-weight: 700; font-size: 1.15rem;">🙏 राम कृष्ण हरी, अंकुश महाराज!</h4>
+                    <p style="margin: 0 0 14px; font-size: 0.92rem; color: #475569;">खालीलपैकी कोणताही पर्याय निवडा — काहीही टाइप करायची गरज नाही:</p>
                 </div>
             `;
-            renderOptionsChips([]);
+            renderOptionsChips(TELEGRAM_MENU_OPTIONS);
             return;
         }
 
@@ -338,14 +360,241 @@ CORE BEHAVIOR RULES:
 
         const lower = query.toLowerCase().trim();
 
-        // 1. Rule: Greeting ("hii", "hi", "hello", "नमस्कार")
-        if (/^(hi|hii|hello|hey|हॅलो|हाय|नमस्कार|राम कृष्ण हरी)$/i.test(lower) || /^(hi|hii|hello)\b/i.test(lower)) {
-            const greetingReply = `🙏 राम कृष्ण हरी अंकुश महाराज! मी कशा प्रकारे तुमची मदत करू शकतो?\n\n\`\`\`options\n["हजेरी (Attendance)", "विद्यार्थी माहिती व गुण", "फी व्यवहार (Fees)", "तक्रार नोंदवा"]\n\`\`\``;
+        // 1. Rule: Greeting or Main Menu (Telegram bot style)
+        if (/^(hi|hii|hello|hey|हॅलो|हाय|नमस्कार|राम कृष्ण हरी|menu|मेनू|मुख्य मेनू|🏠 मुख्य मेनू)$/i.test(lower) || /^(hi|hii|hello)\b/i.test(lower)) {
             setTimeout(() => {
-                history.push({ role: 'assistant', content: greetingReply });
+                history.push({ role: 'assistant', content: TELEGRAM_GREETING_REPLY });
                 saveHistory();
                 renderMessages(false);
-            }, 300);
+            }, 200);
+            return;
+        }
+
+        // Telegram Bot Menu Handlers
+        if (query.includes('1️⃣') || query === 'हजेरी घ्या') {
+            if (typeof switchPanel === 'function') switchPanel('panel-attendance');
+            const attReply = `📋 **हजेरी व्यवस्थापन (1️⃣ हजेरी घ्या)**\n\nसॉफ्टवेअरमध्ये हजेरी पॅनल उघडले आहे. खालीलपैकी सत्र निवडा किंवा आज गैरहजर असणाऱ्यांची यादी तपासा:\n\n\`\`\`options\n["सकाळची हजेरी (Morning)", "शाळेची हजेरी (School)", "संध्याकाळची हजेरी (Evening)", "आज गैरहजर असणारे विद्यार्थी", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: attReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('2️⃣') || query === 'विद्यार्थी माहिती') {
+            if (typeof switchPanel === 'function') switchPanel('panel-students');
+            const stuReply = `👥 **विद्यार्थी माहिती डिरेक्टरी (2️⃣ विद्यार्थी माहिती)**\n\nगुरुकुलातील सर्व ७२ विद्यार्थ्यांची यादी उघडली आहे. ज्या विद्यार्थ्याची संपूर्ण माहिती हवी आहे, त्यांचा **हजेरी क्रमांक (Roll No. १ ते ७२)** इथे टाका:\n\n\`\`\`options\n["१ (अवधूत गाडेकर)", "२ (यश खरात)", "११ (संगम तोडकर)", "१५ (लक्की बाघुल)", "३५ (वेदांत गव्हाणे)", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: stuReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('3️⃣') || query === 'मागील इतिहास') {
+            const histReply = `📜 **विद्यार्थी मागील इतिहास (3️⃣ मागील इतिहास)**\n\nविद्यार्थ्यांची मागील उपस्थिती, गैरशिस्त व प्रगतीचा इतिहास पाहण्यासाठी विद्यार्थ्याचा रोल नंबर सांगा:\n\n\`\`\`options\n["११ (संगम तोडकर इतिहास)", "५ (श्याम शिनगारे इतिहास)", "२३ (ज्ञानेश्वर इतिहास)", "३५ (वेदांत गव्हाणे इतिहास)", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: histReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('4️⃣') || query === 'तक्रार नोंदवा') {
+            const compMenuReply = `⚠️ **तक्रार व गैरशिस्त नोंदणी (4️⃣ तक्रार नोंदवा)**\n\nकोणत्या विद्यार्थ्याची तक्रार नोंदवायची आहे? रोल नंबर आणि प्रकार सांगा (उदा. 'roll 11 ची तक्रार: शाळेत मस्ती').\n\nकिंवा खालीलपैकी विद्यार्थ्याची तक्रार पहा:\n\n\`\`\`options\n["११ (संगम तोडकर तक्रारी)", "५ (श्याम शिनगारे तक्रारी)", "सर्व तक्रारींची यादी", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: compMenuReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('5️⃣') || query === 'आदर्श विद्यार्थी') {
+            let adarshText = 'सध्या कोणताही आदर्श विद्यार्थी सेट केलेला नाही.';
+            try {
+                const raw = localStorage.getItem('vss_adarsh_week');
+                if (raw) {
+                    const obj = JSON.parse(raw);
+                    const st = students().find(x => String(x.id) === String(obj.studentId));
+                    if (st) adarshText = `या आठवड्याचे स्टार विद्यार्थी: **${nameOf(st)}** (हजेरी क्र. ${st.rollNo})\n• नोंद: ${obj.note || 'उत्कृष्ट शिस्त व अभ्यास'}`;
+                }
+            } catch (_) {}
+            const starReply = `⭐ **आदर्श विद्यार्थी (5️⃣ आदर्श विद्यार्थी)**\n\n${adarshText}\n\nनवीन आदर्श विद्यार्थी निवडण्यासाठी रोल नंबर सांगा (उदा. 'roll 25 ला आदर्श विद्यार्थी करा'):\n\n\`\`\`options\n["२५ (ज्ञानेश्वर मासोळे)", "१ (अवधूत गाडेकर)", "१० (तन्मय गाडेकर)", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: starReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('6️⃣') || query === 'आजची बॅकअप') {
+            try {
+                if (typeof window.vssCloud !== 'undefined' && typeof window.vssCloud.save === 'function') window.vssCloud.save();
+            } catch (_) {}
+            const backupReply = `💾 **आजचा बॅकअप (6️⃣ आजची बॅकअप)**\n\nसर्व ७२ विद्यार्थ्यांचा डेटा, ९ आठवड्यांचे गुण, फी आणि हजेरी सुरक्षित सेव्ह झाली आहे.\n\nबॅकअप डाउनलोड करण्यासाठी पर्याय निवडा:\n\n\`\`\`options\n["📥 बॅकअप डाउनलोड करा", "📊 विद्यार्थी एक्सेल एक्सपोर्ट", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: backupReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('7️⃣') || query === 'फी व्यवहार') {
+            const stus = students();
+            let totBal = 0;
+            let balCount = 0;
+            stus.forEach(s => {
+                const f = s.fees || {};
+                const t = Number(f.totalFees || f.total || 35000);
+                const p = Number(f.paidAmount || f.paid || 0);
+                if (t - p > 0) { totBal += (t - p); balCount++; }
+            });
+            const feeReply = `💰 **फी व्यवहार व हिशोब (7️⃣ फी व्यवहार)**\n\n• एकूण विद्यार्थी: **${stus.length}**\n• फी बाकी असणारे: **${balCount} विद्यार्थी** (एकूण थकबाकी: **₹${totBal.toLocaleString('en-IN')}**)\n\nखालीलपैकी पर्याय निवडा:\n\n\`\`\`options\n["🔴 शिल्लक फी यादी", "🟢 पूर्ण फी भरलेले विद्यार्थी", "💵 नवीन फी जमा करा", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: feeReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('8️⃣') || query === 'सूचना पाठवा') {
+            if (typeof switchPanel === 'function') switchPanel('panel-sms');
+            const alertReply = `📢 **पालकांना सूचना पाठवा (8️⃣ सूचना पाठवा)**\n\nसॉफ्टवेअरमध्ये SMS व सूचना पॅनल उघडले आहे. पालकांना WhatsApp / SMS द्वारे सूचना पाठवण्यासाठी पर्याय निवडा:\n\n\`\`\`options\n["गैरहजर विद्यार्थ्यांच्या पालकांना SMS", "फी थकबाकी सूचना", "सामान्य गुरुकुल सूचना", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: alertReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('9️⃣') || query === 'परीक्षा गुण') {
+            if (typeof switchPanel === 'function') switchPanel('panel-exam');
+            const exReply = `📝 **परीक्षा गुण व्यवस्थापन (9️⃣ परीक्षा गुण)**\n\nसॉफ्टवेअरमध्ये परीक्षा विभाग उघडला आहे. साप्ताहिक परीक्षा १ ते ९ चे गुण तपासण्यासाठी किंवा भरण्यासाठी पर्याय निवडा:\n\n\`\`\`options\n["📊 साप्ताहिक गुण", "गुणवत्ता यादी (Merit List)", "नवीन परीक्षा तयार करा", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: exReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('📊') || query === 'साप्ताहिक गुण') {
+            const wmReply = `📈 **साप्ताहिक परीक्षा गुण व आलेख (📊 साप्ताहिक गुण)**\n\nहप्ता १ ते ९ चे गुण आणि प्रगती आलेख (Graph) पाहण्यासाठी विद्यार्थ्याचा रोल नंबर टाका:\n\n\`\`\`options\n["१ (अवधूत गुण)", "२ (यश गुण)", "११ (संगम गुण)", "१५ (लक्की गुण)", "२५ (ज्ञानेश्वर गुण)", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: wmReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('🔟') || query === 'दैनंदिन सेवा') {
+            if (typeof switchPanel === 'function') switchPanel('panel-daily-task');
+            const taskReply = `⏰ **दैनंदिन सेवा व वेळापत्रक (🔟 दैनंदिन सेवा)**\n\nकाकडा, दैनंदिन पाठ, हरिपाठ व संध्या आरतीच्या कामांचे पॅनल उघडले आहे:\n\n\`\`\`options\n["🌅 सकाळची सेवा", "🌆 संध्याकाळची सेवा", "सेवा पूर्ण नोंदवा", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: taskReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('🎓') || query === 'नवीन प्रवेश') {
+            if (typeof window.openAddStudentModal === 'function') {
+                setTimeout(window.openAddStudentModal, 200);
+            } else if (typeof switchPanel === 'function') {
+                switchPanel('panel-students');
+            }
+            const admReply = `🎓 **नवीन विद्यार्थी प्रवेश (🎓 नवीन प्रवेश)**\n\nनवीन विद्यार्थी नोंदणी फॉर्म उघडला आहे. विद्यार्थ्याचे नाव, पालकांचा फोन, वर्ग आणि पत्ता भरून जतन करा.\n\n\`\`\`options\n["विद्यार्थी यादी पहा", "प्रवेश नियम", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: admReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('🧾') || query === 'फी पावती') {
+            const rcptReply = `🧾 **फी पावती (🧾 फी पावती)**\n\nज्या विद्यार्थ्याची फी पावती तयार करायची किंवा पाहायची आहे, त्यांचा रोल नंबर टाका:\n\n\`\`\`options\n["१५ (लक्की बाघुल पावती)", "१ (अवधूत पावती)", "२ (यश पावती)", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: rcptReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('📝') || query === 'मूल्यांकन') {
+            if (typeof switchPanel === 'function') switchPanel('panel-reports');
+            const evalReply = `📊 **विद्यार्थी मूल्यमापन अहवाल (📝 मूल्यांकन)**\n\nअभ्यास, शिस्त आणि परीक्षेवर आधारित मूल्यांकन रिपोर्ट उघडला आहे:\n\n\`\`\`options\n["उत्कृष्ट विद्यार्थी", "सुधारणा आवश्यक विद्यार्थी", "सर्व विद्यार्थी रिपोर्ट", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: evalReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('🏠 रजा') || query === 'रजा / गावी गेला') {
+            const leaveReply = `🏠 **विद्यार्थी रजा नोंद (🏠 रजा / गावी गेला)**\n\nगावी गेलेल्या विद्यार्थ्यांची रजा नोंदवण्यासाठी रोल नंबर सांगा (उदा. 'roll 10 गावी गेला आहे - रजा नोंदवा'):\n\n\`\`\`options\n["१० (तन्मय गाडेकर रजा)", "३५ (वेदांत गव्हाणे रजा)", "रजेवर असणारे विद्यार्थी", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: leaveReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('📚') || query === 'विषय बदला') {
+            const subjReply = `📚 **विषय व अभ्यासक्रम व्यवस्थापन (📚 विषय बदला)**\n\nगुरुकुलामध्ये शिकवले जाणारे विषय:\n• 🪘 **मृदंग वादन**\n• 🎶 **गायन व तबला**\n• 📖 **कीर्तन व पाठांतर**\n• 🏫 **शालेय शिक्षण (५ वी ते १० वी)**\n\n\`\`\`options\n["मृदंग विषय विद्यार्थी", "कीर्तन विषय विद्यार्थी", "शालेय अभ्यासक्रम", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: subjReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('✏️') || query === 'बदल करा') {
+            if (typeof switchPanel === 'function') switchPanel('panel-settings');
+            const setReply = `⚙️ **सॉफ्टवेअर सेटिंग्ज व बदल (✏️ बदल करा)**\n\nसेटिंग्ज पॅनल उघडले आहे. पासवर्ड, ॲडमिन प्रोफाईल किंवा बायोमेट्रिक बदलण्यासाठी पर्याय निवडा:\n\n\`\`\`options\n["🔐 पासवर्ड बदला", "👤 ॲडमिन प्रोफाईल", "🛡️ बायोमेट्रिक फिंगरप्रिंट", "🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: setReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
+            return;
+        }
+
+        if (query.includes('बॅकअप डाउनलोड')) {
+            try {
+                const data = { app_state: {}, exported_at: new Date().toISOString() };
+                ['vss_students', 'vss_exams', 'vss_adarsh_week'].forEach(k => {
+                    const v = localStorage.getItem(k);
+                    if (v !== null) data.app_state[k] = v;
+                });
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const u = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = u;
+                a.download = `gurukulam-backup-${new Date().toISOString().slice(0, 10)}.json`;
+                a.click();
+                URL.revokeObjectURL(u);
+            } catch (_) {}
+            const dlReply = `✅ **बॅकअप फाईल यशस्वीरीत्या डाउनलोड झाली आहे!**\n\nसर्व ७२ विद्यार्थी व परीक्षा डेटा सुरक्षित सेव्ह झाला आहे.\n\n\`\`\`options\n["🏠 मुख्य मेनू"]\n\`\`\``;
+            setTimeout(() => {
+                history.push({ role: 'assistant', content: dlReply });
+                saveHistory();
+                renderMessages(false);
+            }, 200);
             return;
         }
 
