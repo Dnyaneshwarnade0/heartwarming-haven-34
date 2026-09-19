@@ -9,136 +9,174 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as GalleryRouteImport } from './routes/gallery'
-import { Route as CurriculumRouteImport } from './routes/curriculum'
-import { Route as ContactRouteImport } from './routes/contact'
-import { Route as ActivitiesRouteImport } from './routes/activities'
-import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiPublicAiChatRouteImport } from './routes/api/public/ai-chat'
+import { Route as ApiPublicAppStateRouteImport } from './routes/api/public/app/state'
+import { Route as ApiPublicTelegramDailyRouteImport } from './routes/api/public/telegram/daily'
+import { Route as ApiPublicTelegramNotifyRouteImport } from './routes/api/public/telegram/notify'
+import { Route as ApiPublicTelegramPhotoRouteImport } from './routes/api/public/telegram/photo'
+import { Route as ApiPublicTelegramPullRouteImport } from './routes/api/public/telegram/pull'
+import { Route as ApiPublicTelegramSetupRouteImport } from './routes/api/public/telegram/setup'
+import { Route as ApiPublicTelegramSyncRouteImport } from './routes/api/public/telegram/sync'
+import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
-const GalleryRoute = GalleryRouteImport.update({
-  id: '/gallery',
-  path: '/gallery',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CurriculumRoute = CurriculumRouteImport.update({
-  id: '/curriculum',
-  path: '/curriculum',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContactRoute = ContactRouteImport.update({
-  id: '/contact',
-  path: '/contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ActivitiesRoute = ActivitiesRouteImport.update({
-  id: '/activities',
-  path: '/activities',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAiChatRoute = ApiPublicAiChatRouteImport.update({
+  id: '/api/public/ai-chat',
+  path: '/api/public/ai-chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicAppStateRoute = ApiPublicAppStateRouteImport.update({
+  id: '/api/public/app/state',
+  path: '/api/public/app/state',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicTelegramDailyRoute = ApiPublicTelegramDailyRouteImport.update({
+  id: '/api/public/telegram/daily',
+  path: '/api/public/telegram/daily',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicTelegramNotifyRoute = ApiPublicTelegramNotifyRouteImport.update({
+  id: '/api/public/telegram/notify',
+  path: '/api/public/telegram/notify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicTelegramPhotoRoute = ApiPublicTelegramPhotoRouteImport.update({
+  id: '/api/public/telegram/photo',
+  path: '/api/public/telegram/photo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicTelegramPullRoute = ApiPublicTelegramPullRouteImport.update({
+  id: '/api/public/telegram/pull',
+  path: '/api/public/telegram/pull',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicTelegramSetupRoute = ApiPublicTelegramSetupRouteImport.update({
+  id: '/api/public/telegram/setup',
+  path: '/api/public/telegram/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicTelegramSyncRoute = ApiPublicTelegramSyncRouteImport.update({
+  id: '/api/public/telegram/sync',
+  path: '/api/public/telegram/sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicTelegramWebhookRoute =
+  ApiPublicTelegramWebhookRouteImport.update({
+    id: '/api/public/telegram/webhook',
+    path: '/api/public/telegram/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/activities': typeof ActivitiesRoute
-  '/contact': typeof ContactRoute
-  '/curriculum': typeof CurriculumRoute
-  '/gallery': typeof GalleryRoute
+  '/api/public/ai-chat': typeof ApiPublicAiChatRoute
+  '/api/public/app/state': typeof ApiPublicAppStateRoute
+  '/api/public/telegram/daily': typeof ApiPublicTelegramDailyRoute
+  '/api/public/telegram/notify': typeof ApiPublicTelegramNotifyRoute
+  '/api/public/telegram/photo': typeof ApiPublicTelegramPhotoRoute
+  '/api/public/telegram/pull': typeof ApiPublicTelegramPullRoute
+  '/api/public/telegram/setup': typeof ApiPublicTelegramSetupRoute
+  '/api/public/telegram/sync': typeof ApiPublicTelegramSyncRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/activities': typeof ActivitiesRoute
-  '/contact': typeof ContactRoute
-  '/curriculum': typeof CurriculumRoute
-  '/gallery': typeof GalleryRoute
+  '/api/public/ai-chat': typeof ApiPublicAiChatRoute
+  '/api/public/app/state': typeof ApiPublicAppStateRoute
+  '/api/public/telegram/daily': typeof ApiPublicTelegramDailyRoute
+  '/api/public/telegram/notify': typeof ApiPublicTelegramNotifyRoute
+  '/api/public/telegram/photo': typeof ApiPublicTelegramPhotoRoute
+  '/api/public/telegram/pull': typeof ApiPublicTelegramPullRoute
+  '/api/public/telegram/setup': typeof ApiPublicTelegramSetupRoute
+  '/api/public/telegram/sync': typeof ApiPublicTelegramSyncRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/activities': typeof ActivitiesRoute
-  '/contact': typeof ContactRoute
-  '/curriculum': typeof CurriculumRoute
-  '/gallery': typeof GalleryRoute
+  '/api/public/ai-chat': typeof ApiPublicAiChatRoute
+  '/api/public/app/state': typeof ApiPublicAppStateRoute
+  '/api/public/telegram/daily': typeof ApiPublicTelegramDailyRoute
+  '/api/public/telegram/notify': typeof ApiPublicTelegramNotifyRoute
+  '/api/public/telegram/photo': typeof ApiPublicTelegramPhotoRoute
+  '/api/public/telegram/pull': typeof ApiPublicTelegramPullRoute
+  '/api/public/telegram/setup': typeof ApiPublicTelegramSetupRoute
+  '/api/public/telegram/sync': typeof ApiPublicTelegramSyncRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/about'
-    | '/activities'
-    | '/contact'
-    | '/curriculum'
-    | '/gallery'
+    | '/api/public/ai-chat'
+    | '/api/public/app/state'
+    | '/api/public/telegram/daily'
+    | '/api/public/telegram/notify'
+    | '/api/public/telegram/photo'
+    | '/api/public/telegram/pull'
+    | '/api/public/telegram/setup'
+    | '/api/public/telegram/sync'
+    | '/api/public/telegram/webhook'
+    | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/activities' | '/contact' | '/curriculum' | '/gallery'
+  to:
+    | '/'
+    | '/api/public/ai-chat'
+    | '/api/public/app/state'
+    | '/api/public/telegram/daily'
+    | '/api/public/telegram/notify'
+    | '/api/public/telegram/photo'
+    | '/api/public/telegram/pull'
+    | '/api/public/telegram/setup'
+    | '/api/public/telegram/sync'
+    | '/api/public/telegram/webhook'
+    | '/lovable/email/transactional/preview'
   id:
     | '__root__'
     | '/'
-    | '/about'
-    | '/activities'
-    | '/contact'
-    | '/curriculum'
-    | '/gallery'
+    | '/api/public/ai-chat'
+    | '/api/public/app/state'
+    | '/api/public/telegram/daily'
+    | '/api/public/telegram/notify'
+    | '/api/public/telegram/photo'
+    | '/api/public/telegram/pull'
+    | '/api/public/telegram/setup'
+    | '/api/public/telegram/sync'
+    | '/api/public/telegram/webhook'
+    | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
-  ActivitiesRoute: typeof ActivitiesRoute
-  ContactRoute: typeof ContactRoute
-  CurriculumRoute: typeof CurriculumRoute
-  GalleryRoute: typeof GalleryRoute
+  ApiPublicAiChatRoute: typeof ApiPublicAiChatRoute
+  ApiPublicAppStateRoute: typeof ApiPublicAppStateRoute
+  ApiPublicTelegramDailyRoute: typeof ApiPublicTelegramDailyRoute
+  ApiPublicTelegramNotifyRoute: typeof ApiPublicTelegramNotifyRoute
+  ApiPublicTelegramPhotoRoute: typeof ApiPublicTelegramPhotoRoute
+  ApiPublicTelegramPullRoute: typeof ApiPublicTelegramPullRoute
+  ApiPublicTelegramSetupRoute: typeof ApiPublicTelegramSetupRoute
+  ApiPublicTelegramSyncRoute: typeof ApiPublicTelegramSyncRoute
+  ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/gallery': {
-      id: '/gallery'
-      path: '/gallery'
-      fullPath: '/gallery'
-      preLoaderRoute: typeof GalleryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/curriculum': {
-      id: '/curriculum'
-      path: '/curriculum'
-      fullPath: '/curriculum'
-      preLoaderRoute: typeof CurriculumRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/activities': {
-      id: '/activities'
-      path: '/activities'
-      fullPath: '/activities'
-      preLoaderRoute: typeof ActivitiesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -146,16 +184,91 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/ai-chat': {
+      id: '/api/public/ai-chat'
+      path: '/api/public/ai-chat'
+      fullPath: '/api/public/ai-chat'
+      preLoaderRoute: typeof ApiPublicAiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/app/state': {
+      id: '/api/public/app/state'
+      path: '/api/public/app/state'
+      fullPath: '/api/public/app/state'
+      preLoaderRoute: typeof ApiPublicAppStateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/telegram/daily': {
+      id: '/api/public/telegram/daily'
+      path: '/api/public/telegram/daily'
+      fullPath: '/api/public/telegram/daily'
+      preLoaderRoute: typeof ApiPublicTelegramDailyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/telegram/notify': {
+      id: '/api/public/telegram/notify'
+      path: '/api/public/telegram/notify'
+      fullPath: '/api/public/telegram/notify'
+      preLoaderRoute: typeof ApiPublicTelegramNotifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/telegram/photo': {
+      id: '/api/public/telegram/photo'
+      path: '/api/public/telegram/photo'
+      fullPath: '/api/public/telegram/photo'
+      preLoaderRoute: typeof ApiPublicTelegramPhotoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/telegram/pull': {
+      id: '/api/public/telegram/pull'
+      path: '/api/public/telegram/pull'
+      fullPath: '/api/public/telegram/pull'
+      preLoaderRoute: typeof ApiPublicTelegramPullRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/telegram/setup': {
+      id: '/api/public/telegram/setup'
+      path: '/api/public/telegram/setup'
+      fullPath: '/api/public/telegram/setup'
+      preLoaderRoute: typeof ApiPublicTelegramSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/telegram/sync': {
+      id: '/api/public/telegram/sync'
+      path: '/api/public/telegram/sync'
+      fullPath: '/api/public/telegram/sync'
+      preLoaderRoute: typeof ApiPublicTelegramSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/telegram/webhook': {
+      id: '/api/public/telegram/webhook'
+      path: '/api/public/telegram/webhook'
+      fullPath: '/api/public/telegram/webhook'
+      preLoaderRoute: typeof ApiPublicTelegramWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
-  ActivitiesRoute: ActivitiesRoute,
-  ContactRoute: ContactRoute,
-  CurriculumRoute: CurriculumRoute,
-  GalleryRoute: GalleryRoute,
+  ApiPublicAiChatRoute: ApiPublicAiChatRoute,
+  ApiPublicAppStateRoute: ApiPublicAppStateRoute,
+  ApiPublicTelegramDailyRoute: ApiPublicTelegramDailyRoute,
+  ApiPublicTelegramNotifyRoute: ApiPublicTelegramNotifyRoute,
+  ApiPublicTelegramPhotoRoute: ApiPublicTelegramPhotoRoute,
+  ApiPublicTelegramPullRoute: ApiPublicTelegramPullRoute,
+  ApiPublicTelegramSetupRoute: ApiPublicTelegramSetupRoute,
+  ApiPublicTelegramSyncRoute: ApiPublicTelegramSyncRoute,
+  ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
