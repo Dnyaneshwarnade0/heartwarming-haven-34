@@ -160,29 +160,58 @@
           </button>
         </div>
 
-        <!-- Download App Button & Notice -->
-        <div style="display: flex; flex-direction: column; align-items: center; margin-top: 6px; border-top: 1px dashed rgba(0,0,0,0.12); padding-top: 14px;">
-          <button
-            type="button"
+        <!-- Download App Link & Panel -->
+        <div style="display: flex; flex-direction: column; align-items: center; margin-top: 10px; border-top: 1px dashed rgba(0,0,0,0.12); padding-top: 14px; width: 100%;">
+          <a
+            href="#"
             id="btn-login-download-app"
             class="btn-download-app-small"
-            title="Download App"
-            onclick="(function(){
+            title="Download Gurukulam App"
+            onclick="(function(e){
+              if(e) e.preventDefault();
               var m = document.getElementById('download-app-message');
-              if (m) { m.classList.remove('d-none'); m.style.display='block'; }
-              if (typeof createToast === 'function') {
-                createToast('⏳ Wait 5 hours / ५ तासांनंतर प्रयत्न करा.', 'warning');
-              } else {
-                alert('⏳ Wait 5 hours / ५ तासांनंतर प्रयत्न करा.');
+              if (m) {
+                var isHidden = m.classList.contains('d-none') || m.style.display === 'none';
+                if (isHidden) { m.classList.remove('d-none'); m.style.display = 'block'; }
+                else { m.classList.add('d-none'); m.style.display = 'none'; }
               }
-            })()"
+              if (typeof window.vssInstallApp === 'function') {
+                window.vssInstallApp();
+              }
+            })(event); return false;"
+            style="text-decoration: none; cursor: pointer;"
           >
             <i class="fa-solid fa-cloud-arrow-down"></i>
-            <span>Download App</span>
-          </button>
-          <div id="download-app-message" class="d-none" style="margin-top: 10px; padding: 10px 16px; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 12px; font-size: 0.85rem; color: #92400E; text-align: center; line-height: 1.5; max-width: 300px; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.12);">
-            <div style="font-weight: 700; font-size: 0.92rem; margin-bottom: 2px;">⏳ Wait 5 hours</div>
-            <div>कृपया ५ तासांनंतर प्रयत्न करा.</div>
+            <span>📲 Download App (ॲप डाऊनलोड करा)</span>
+          </a>
+
+          <div id="download-app-message" class="d-none" style="margin-top: 12px; padding: 12px 14px; background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 12px; font-size: 0.82rem; color: #166534; text-align: left; line-height: 1.5; width: 100%; box-shadow: 0 4px 14px rgba(22, 163, 74, 0.1);">
+            <div style="font-weight: 700; font-size: 0.88rem; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; color: #15803d;">
+              <span><i class="fa-solid fa-circle-check"></i> थेट मोबाईल ॲप इन्स्टॉल करा:</span>
+              <button type="button" onclick="(function(){ var m = document.getElementById('download-app-message'); if (m) { m.classList.add('d-none'); m.style.display='none'; } })()" style="background: none; border: none; font-size: 1.1rem; line-height: 1; color: #64748b; cursor: pointer;">&times;</button>
+            </div>
+            <div style="margin-bottom: 8px; font-size: 0.78rem; color: #374151;">
+              • <b>Android / Chrome:</b> मेनू (<b>⋮</b>) मधून <b>"Install app"</b> किंवा <b>"Add to Home screen"</b> निवडा.<br>
+              • <b>iPhone / Safari:</b> शेअर चिन्ह (<b>Share ⎋</b>) दाबून <b>"Add to Home Screen"</b> निवडा.
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 6px;">
+              <button type="button" class="btn-primary" onclick="window.vssInstallApp && window.vssInstallApp();" style="flex: 1; padding: 6px 10px; font-size: 0.78rem; min-height: 34px; border-radius: 6px; justify-content: center;">
+                <i class="fa-solid fa-download"></i> इन्स्टॉल करा
+              </button>
+              <button type="button" class="btn-secondary" onclick="(function(){
+                var url = window.location.href;
+                if (navigator.clipboard) {
+                  navigator.clipboard.writeText(url).then(function(){
+                    if (typeof createToast === 'function') createToast('🔗 ॲप डाउनलोड लिंक कॉपी झाली!', 'success');
+                    else alert('🔗 ॲप डाउनलोड लिंक कॉपी झाली!');
+                  });
+                } else {
+                  prompt('ॲप डाउनलोड लिंक कॉपी करा:', url);
+                }
+              })()" style="flex: 1; padding: 6px 10px; font-size: 0.78rem; min-height: 34px; border-radius: 6px; justify-content: center;">
+                <i class="fa-regular fa-copy"></i> लिंक कॉपी करा
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1509,6 +1538,6 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- cloud.js आधी क्लाऊडवरून डेटा आणतो, मग बाकीचे स्क्रिप्ट लोड करतो -->
-    <script src="cloud.js?v=23"></script>
+    <script src="cloud.js?v=24"></script>
   </body>
 </html>
