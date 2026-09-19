@@ -67,10 +67,8 @@ RULES & BEHAVIOR:
        \`\`\`
 4. ROLL NUMBER DETECTION (1 to 72):
    - If user enters a number between 1 and 72, immediately identify the student with that roll number.
-   - Display their name, category, pending fees, and their Weekly Exam Marks (Weeks 1 to 9) with average.
-   - Output action command: \`\`\`action
-   {"type": "open_student", "studentId": "<studentId>"}
-   \`\`\`
+   - Display their name, details, pending fees, and Weekly Exam Marks.
+   - For Attendance: Clearly show Today's Status (आजची हजेरी) if taken, or explicitly state that today's attendance has not been taken yet ("⚠️ आजची हजेरी अद्याप घेतलेली नाही"). Lifetime average must be clearly labeled as "मागील एकूण सरासरी उपस्थिती".
 5. INVALID ROLL NUMBER:
    - If user enters a number outside 1-72, inform:
      "हा हजेरी क्रमांक (Roll Number) गुरुकुलातील विद्यार्थ्यांशी जुळत नाही. कृपया १ ते ७२ मधील हजेरी क्रमांक टाका."
@@ -78,7 +76,7 @@ RULES & BEHAVIOR:
    - If user's intent is clear, give direct, specific, accurate answers immediately from the app snapshot.
    - If user's intent is ambiguous or not clear, ask polite cross-questions to discover what they need.
 7. ATTENDANCE & CONTEXTUAL MENUS:
-   - If user asks about attendance (हजेरी), offer specific shifts.
+   - If user asks about today's attendance, check if today's attendance was actually recorded. If not taken, state clearly that today's attendance is not taken yet.
 8. INTERACTIVE BUTTONS:
    - Always put suggested follow-up choices inside a \`\`\`options block (one per line) so user can tap them.
 

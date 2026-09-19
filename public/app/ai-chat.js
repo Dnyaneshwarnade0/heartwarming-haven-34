@@ -549,6 +549,28 @@ CORE BEHAVIOR RULES:
                 const eveStr = att.eveningPct != null ? `${att.eveningPct}%` : 'नोंद नाही';
                 const ovrStr = att.overallPct != null ? `${att.overallPct}%` : 'नोंद नाही';
 
+                // Check today's actual attendance
+                const now = new Date();
+                const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                const todayFormatted = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+                
+                const todayRec = (stu.dailyAttendance && stu.dailyAttendance[todayKey]) || null;
+                let todayAttSection = '';
+                if (!todayRec || (todayRec.morning === undefined && todayRec.school === undefined && todayRec.evening === undefined)) {
+                    todayAttSection = `📅 **आजची हजेरी (${todayFormatted}):**\n⚠️ **आजची हजेरी अद्याप घेतलेली नाही (Not Taken Yet)**`;
+                } else {
+                    const fmtAtt = (val) => {
+                        if (val === true) return '✅ हजर';
+                        if (val === false) return '❌ गैरहजर';
+                        if (val === 'leave') return '🏖️ रजा';
+                        return '⏳ नोंद नाही';
+                    };
+                    const mStatus = todayRec.morning !== undefined ? fmtAtt(todayRec.morning) : '⏳ नोंद नाही';
+                    const sStatus = todayRec.school !== undefined ? fmtAtt(todayRec.school) : '⏳ नोंद नाही';
+                    const eStatus = todayRec.evening !== undefined ? fmtAtt(todayRec.evening) : '⏳ नोंद नाही';
+                    todayAttSection = `📅 **आजची हजेरी (${todayFormatted}):**\n• सकाळ: **${mStatus}** | शाळा: **${sStatus}** | संध्याकाळ: **${eStatus}**`;
+                }
+
                 const wkMarks = getStudentWeeklyMarks(stu.id);
                 const marksLines = wkMarks.length ? wkMarks.map(w => `  • **${w.name}:** ${w.marks != null ? `**${w.marks}** / ${w.max} (${Math.round((w.marks/w.max)*100)}%)` : 'अनुपस्थित / नोंद नाही'}`).join('\n') : '  • कोणत्याही परीक्षेची नोंद नाही';
                 const valid = wkMarks.filter(w => w.marks !== null);
@@ -588,9 +610,9 @@ CORE BEHAVIOR RULES:
 • भरलेली फी: **₹${paidFees.toLocaleString('en-IN')}**
 • शिल्लक फी: **${feeStatus}**
 
-📊 **हजेरी अहवाल (Attendance):**
-• सकाळ: **${mornStr}** | शाळा: **${schStr}** | संध्याकाळ: **${eveStr}**
-• **एकूण सरासरी उपस्थिती:** **${ovrStr}**
+${todayAttSection}
+
+📊 **मागील एकूण सरासरी उपस्थिती:** **${ovrStr}** (सकाळ: ${mornStr} | शाळा: ${schStr} | संध्याकाळ: ${eveStr})
 
 📈 **साप्ताहिक परीक्षा निकाल (हप्ता १ ते ९):**
 ${marksLines}
@@ -613,52 +635,96 @@ ${remSection}
         }
 
         // 9. Attendance Handlers
+        const nowObj = new Date();
+        const todayDateKey = `${nowObj.getFullYear()}-${String(nowObj.getMonth() + 1).padStart(2, '0')}-${String(nowObj.getDate()).padStart(2, '0')}`;
+        const todayDateFormatted = `${String(nowObj.getDate()).padStart(2, '0')}/${String(nowObj.getMonth() + 1).padStart(2, '0')}/${nowObj.getFullYear()}`;
+
         if (query.includes('1️⃣') || query === 'हजेरी घ्या' || lower === 'हजेरी' || lower === 'attendance') {
-            return `📋 **हजेरी व्यवस्थापन (1️⃣ हजेरी घ्या)**\n\nखालीलपैकी सत्र निवडा किंवा आज गैरहजर असणाऱ्यांची यादी तपासा:\n\n\`\`\`options\n["सकाळची हजेरी (Morning)", "शाळेची हजेरी (School)", "संध्याकाळची हजेरी (Evening)", "आज गैरहजर असणारे विद्यार्थी", "🏠 मुख्य मेनू"]\n\`\`\``;
+            return `📋 **हजेरी व्यवस्थापन (1️⃣ हजेरी घ्या)**\n📅 **आजची तारीख:** ${todayDateFormatted}\n\nखालीलपैकी सत्र निवडा किंवा आज गैरहजर असणाऱ्यांची यादी तपासा:\n\n\`\`\`options\n["सकाळची हजेरी (Morning)", "शाळेची हजेरी (School)", "संध्याकाळची हजेरी (Evening)", "आज गैरहजर असणारे विद्यार्थी", "🏠 मुख्य मेनू"]\n\`\`\``;
         }
 
         if (query.includes('सकाळची हजेरी')) {
-            let pres = 0, tot = stus.length;
+            const hasRec = stus.some(s => s.dailyAttendance && s.dailyAttendance[todayDateKey] && s.dailyAttendance[todayDateKey].morning !== undefined);
+            if (!hasRec) {
+                return `🌅 **सकाळची हजेरी अहवाल (Morning Attendance)**\n📅 **तारीख:** ${todayDateFormatted}\n\n⚠️ **आज सकाळची हजेरी अद्याप घेतलेली नाही (Not Taken Yet).**\n\nगुरुकुलामध्ये सकाळची हजेरी नोंदवल्यानंतर येथे उपस्थित व गैरहजर विद्यार्थ्यांची यादी दिसेल.\n\n\`\`\`options\n["शाळेची हजेरी (School)", "संध्याकाळची हजेरी (Evening)", "आज गैरहजर असणारे विद्यार्थी", "🏠 मुख्य मेनू"]\n\`\`\``;
+            }
+            let pres = 0, abs = 0, leave = 0;
+            const absStus = [];
             stus.forEach(s => {
-                const att = sessionStats(s);
-                if (att.morningPct == null || att.morningPct >= 50) pres++;
+                const rec = s.dailyAttendance && s.dailyAttendance[todayDateKey];
+                const val = rec ? rec.morning : undefined;
+                if (val === true) pres++;
+                else if (val === false) { abs++; absStus.push(s); }
+                else if (val === 'leave') leave++;
             });
-            const pct = tot ? Math.round((pres / tot) * 100) : 100;
-            return `🌅 **सकाळची हजेरी अहवाल (Morning Attendance)**\n\n• **एकूण विद्यार्थी:** ${tot}\n• **उपस्थित विद्यार्थी:** **${pres}** (${pct}%)\n• **गैरहजर / सुट्टी:** **${tot - pres}**\n• **वेळ:** काकडा आरती व सकाळी पाठांतर सत्र\n\n\`\`\`options\n["आज गैरहजर असणारे विद्यार्थी", "शाळेची हजेरी (School)", "संध्याकाळची हजेरी (Evening)", "🏠 मुख्य मेनू"]\n\`\`\``;
+            const pct = stus.length ? Math.round((pres / stus.length) * 100) : 0;
+            const absList = absStus.length ? `\n\n⚠️ **सकाळी गैरहजर विद्यार्थी (${absStus.length}):**\n` + absStus.slice(0, 10).map((s, i) => `${i + 1}. Roll ${s.rollNo}: ${nameOf(s)}`).join('\n') : '\n\n✅ सर्व विद्यार्थी हजर!';
+            return `🌅 **सकाळची हजेरी अहवाल (${todayDateFormatted})**\n\n• **एकूण विद्यार्थी:** ${stus.length}\n• **उपस्थित विद्यार्थी:** **${pres}** (${pct}%)\n• **गैरहजर:** **${abs}** | **रजा:** **${leave}**\n• **वेळ:** काकडा आरती व सकाळी पाठांतर सत्र${absList}\n\n\`\`\`options\n["शाळेची हजेरी (School)", "संध्याकाळची हजेरी (Evening)", "आज गैरहजर असणारे विद्यार्थी", "🏠 मुख्य मेनू"]\n\`\`\``;
         }
 
         if (query.includes('शाळेची हजेरी')) {
-            let pres = 0, tot = stus.length;
+            const hasRec = stus.some(s => s.dailyAttendance && s.dailyAttendance[todayDateKey] && s.dailyAttendance[todayDateKey].school !== undefined);
+            if (!hasRec) {
+                return `🏫 **शाळेची हजेरी अहवाल (School Attendance)**\n📅 **तारीख:** ${todayDateFormatted}\n\n⚠️ **आज शाळेची हजेरी अद्याप घेतलेली नाही (Not Taken Yet).**\n\n\`\`\`options\n["सकाळची हजेरी (Morning)", "संध्याकाळची हजेरी (Evening)", "आज गैरहजर असणारे विद्यार्थी", "🏠 मुख्य मेनू"]\n\`\`\``;
+            }
+            let pres = 0, abs = 0, leave = 0;
+            const absStus = [];
             stus.forEach(s => {
-                const att = sessionStats(s);
-                if (att.schoolPct == null || att.schoolPct >= 50) pres++;
+                const rec = s.dailyAttendance && s.dailyAttendance[todayDateKey];
+                const val = rec ? rec.school : undefined;
+                if (val === true) pres++;
+                else if (val === false) { abs++; absStus.push(s); }
+                else if (val === 'leave') leave++;
             });
-            const pct = tot ? Math.round((pres / tot) * 100) : 100;
-            return `🏫 **शाळेची हजेरी अहवाल (School Attendance)**\n\n• **एकूण विद्यार्थी:** ${tot}\n• **उपस्थित विद्यार्थी:** **${pres}** (${pct}%)\n• **गैरहजर विद्यार्थी:** **${tot - pres}**\n• **वेळ:** सकाळी १०:०० ते संध्याकाळी ५:००\n\n\`\`\`options\n["आज गैरहजर असणारे विद्यार्थी", "सकाळची हजेरी (Morning)", "संध्याकाळची हजेरी (Evening)", "🏠 मुख्य मेनू"]\n\`\`\``;
+            const pct = stus.length ? Math.round((pres / stus.length) * 100) : 0;
+            const absList = absStus.length ? `\n\n⚠️ **शाळेत गैरहजर विद्यार्थी (${absStus.length}):**\n` + absStus.slice(0, 10).map((s, i) => `${i + 1}. Roll ${s.rollNo}: ${nameOf(s)}`).join('\n') : '\n\n✅ सर्व विद्यार्थी हजर!';
+            return `🏫 **शाळेची हजेरी अहवाल (${todayDateFormatted})**\n\n• **एकूण विद्यार्थी:** ${stus.length}\n• **उपस्थित विद्यार्थी:** **${pres}** (${pct}%)\n• **गैरहजर:** **${abs}** | **रजा:** **${leave}**\n• **वेळ:** सकाळी १०:०० ते संध्याकाळी ५:००${absList}\n\n\`\`\`options\n["सकाळची हजेरी (Morning)", "संध्याकाळची हजेरी (Evening)", "आज गैरहजर असणारे विद्यार्थी", "🏠 मुख्य मेनू"]\n\`\`\``;
         }
 
         if (query.includes('संध्याकाळची हजेरी')) {
-            let pres = 0, tot = stus.length;
+            const hasRec = stus.some(s => s.dailyAttendance && s.dailyAttendance[todayDateKey] && s.dailyAttendance[todayDateKey].evening !== undefined);
+            if (!hasRec) {
+                return `🌆 **संध्याकाळची हजेरी अहवाल (Evening Attendance)**\n📅 **तारीख:** ${todayDateFormatted}\n\n⚠️ **आज संध्याकाळची हजेरी अद्याप घेतलेली नाही (Not Taken Yet).**\n\n\`\`\`options\n["सकाळची हजेरी (Morning)", "शाळेची हजेरी (School)", "आज गैरहजर असणारे विद्यार्थी", "🏠 मुख्य मेनू"]\n\`\`\``;
+            }
+            let pres = 0, abs = 0, leave = 0;
+            const absStus = [];
             stus.forEach(s => {
-                const att = sessionStats(s);
-                if (att.eveningPct == null || att.eveningPct >= 50) pres++;
+                const rec = s.dailyAttendance && s.dailyAttendance[todayDateKey];
+                const val = rec ? rec.evening : undefined;
+                if (val === true) pres++;
+                else if (val === false) { abs++; absStus.push(s); }
+                else if (val === 'leave') leave++;
             });
-            const pct = tot ? Math.round((pres / tot) * 100) : 100;
-            return `🌆 **संध्याकाळची हजेरी अहवाल (Evening Attendance)**\n\n• **एकूण विद्यार्थी:** ${tot}\n• **उपस्थित विद्यार्थी:** **${pres}** (${pct}%)\n• **गैरहजर विद्यार्थी:** **${tot - pres}**\n• **वेळ:** हरिपाठ व संध्या आरती सत्र\n\n\`\`\`options\n["आज गैरहजर असणारे विद्यार्थी", "सकाळची हजेरी (Morning)", "शाळेची हजेरी (School)", "🏠 मुख्य मेनू"]\n\`\`\``;
+            const pct = stus.length ? Math.round((pres / stus.length) * 100) : 0;
+            const absList = absStus.length ? `\n\n⚠️ **संध्याकाळी गैरहजर विद्यार्थी (${absStus.length}):**\n` + absStus.slice(0, 10).map((s, i) => `${i + 1}. Roll ${s.rollNo}: ${nameOf(s)}`).join('\n') : '\n\n✅ सर्व विद्यार्थी हजर!';
+            return `🌆 **संध्याकाळची हजेरी अहवाल (${todayDateFormatted})**\n\n• **एकूण विद्यार्थी:** ${stus.length}\n• **उपस्थित विद्यार्थी:** **${pres}** (${pct}%)\n• **गैरहजर:** **${abs}** | **रजा:** **${leave}**\n• **वेळ:** हरिपाठ व संध्या आरती सत्र${absList}\n\n\`\`\`options\n["सकाळची हजेरी (Morning)", "शाळेची हजेरी (School)", "आज गैरहजर असणारे विद्यार्थी", "🏠 मुख्य मेनू"]\n\`\`\``;
         }
 
         if (query.includes('आज गैरहजर') || query === 'गैरहजर विद्यार्थी' || lower === 'absent') {
-            const absList = stus.filter(s => {
-                const att = sessionStats(s);
-                return att.overallPct != null && att.overallPct < 60;
-            }).slice(0, 10);
-
-            if (absList.length === 0) {
-                return `✅ **आज गुरुकुलात सर्व ७२ विद्यार्थी उपस्थित आहेत!**\n\nसध्या कोणतीही गैरहजेरी नोंद नाही.\n\n\`\`\`options\n["सकाळची हजेरी (Morning)", "शाळेची हजेरी (School)", "पालकांना सूचना पाठवा", "🏠 मुख्य मेनू"]\n\`\`\``;
+            const hasAnyToday = stus.some(s => {
+                const r = s.dailyAttendance && s.dailyAttendance[todayDateKey];
+                return r && (r.morning !== undefined || r.school !== undefined || r.evening !== undefined);
+            });
+            if (!hasAnyToday) {
+                return `📋 **आज गैरहजर असणारे विद्यार्थी (${todayDateFormatted})**\n\n⚠️ **आजची कोणतीही हजेरी अद्याप घेतलेली नाही (Not Taken Yet).**\n\nहजेरी नोंदवल्यानंतर गैरहजर विद्यार्थ्यांची यादी येथे आपोआप दिसेल.\n\n\`\`\`options\n["सकाळची हजेरी (Morning)", "शाळेची हजेरी (School)", "संध्याकाळची हजेरी (Evening)", "🏠 मुख्य मेनू"]\n\`\`\``;
             }
-
-            const lines = absList.map((s, i) => `${i + 1}. **Roll ${s.rollNo}:** ${nameOf(s)} (📞 ${s.phone || 'फोन नाही'})`).join('\n');
-            return `⚠️ **आज गैरहजर असणारे विद्यार्थी (${absList.length}):**\n\n${lines}\n\n💡 *टीप: पालकांना SMS पाठवण्यासाठी खालील पर्याय निवडा.*\n\n\`\`\`options\n["गैरहजर विद्यार्थ्यांच्या पालकांना SMS", "सकाळची हजेरी (Morning)", "🏠 मुख्य मेनू"]\n\`\`\``;
+            const absList = [];
+            stus.forEach(s => {
+                const r = s.dailyAttendance && s.dailyAttendance[todayDateKey];
+                if (!r) return;
+                const missed = [];
+                if (r.morning === false) missed.push('सकाळ');
+                if (r.school === false) missed.push('शाळा');
+                if (r.evening === false) missed.push('संध्याकाळ');
+                if (missed.length) {
+                    absList.push({ stu: s, missed: missed.join(', ') });
+                }
+            });
+            if (absList.length === 0) {
+                return `✅ **आज गुरुकुलात नोंदवलेल्या सत्रांमध्ये सर्व विद्यार्थी उपस्थित आहेत! (${todayDateFormatted})**\n\nसध्या कोणतीही गैरहजेरी नोंद नाही.\n\n\`\`\`options\n["सकाळची हजेरी (Morning)", "शाळेची हजेरी (School)", "संध्याकाळची हजेरी (Evening)", "🏠 मुख्य मेनू"]\n\`\`\``;
+            }
+            const lines = absList.slice(0, 15).map((item, i) => `${i + 1}. **Roll ${item.stu.rollNo}:** ${nameOf(item.stu)} (${item.missed} गैरहजर) 📞 ${item.stu.phone || 'फोन नाही'}`).join('\n');
+            return `⚠️ **आज गैरहजर असणारे विद्यार्थी (${absList.length}):**\n📅 **तारीख:** ${todayDateFormatted}\n\n${lines}\n\n\`\`\`options\n["गैरहजर विद्यार्थ्यांच्या पालकांना SMS", "सकाळची हजेरी (Morning)", "शाळेची हजेरी (School)", "🏠 मुख्य मेनू"]\n\`\`\``;
         }
 
         // 10. Fee Handlers
