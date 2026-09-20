@@ -178,3 +178,240 @@ button:active,
     padding: 10px 14px;
   }
 }
+
+/* ====================================================================
+   4. MOBILE FULL-SCREEN FIX — No horizontal scrolling, app-like feel
+   ==================================================================== */
+
+/* Prevent any horizontal overflow at root level */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+
+  /* The entire app must never overflow screen horizontally */
+  #app-container,
+  .app-wrapper,
+  .app-content-wrapper,
+  .app-main-content {
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    width: 100% !important;
+  }
+
+  /* Header must be compact and full-width */
+  .app-header {
+    padding: 0 12px !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    max-width: 100vw !important;
+  }
+
+  /* Main content padding — snug but comfortable */
+  .app-main-content {
+    padding: 12px !important;
+    padding-bottom: calc(90px + var(--safe-bottom)) !important;
+  }
+
+  /* Dashboard stats: 2 columns, fully contained */
+  .stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    min-width: 0 !important;
+  }
+
+  .stat-card {
+    min-width: 0 !important;
+    padding: 12px !important;
+    gap: 8px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .stat-card h3 {
+    font-size: 1.2rem !important;
+  }
+
+  .stat-card p,
+  .stat-card .stat-label {
+    font-size: 0.68rem !important;
+    line-height: 1.2 !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+  }
+
+  /* Dashboard two-column rows: stack vertically on mobile */
+  .dashboard-rows {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    min-width: 0 !important;
+  }
+
+  /* Cards must not overflow */
+  .content-card,
+  .chart-card,
+  .controls-card,
+  .card-body,
+  .card-header {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Donut chart: shrink on mobile */
+  .donut-chart-container {
+    width: 140px !important;
+    height: 140px !important;
+  }
+
+  /* Search box: full width, no min-width overflow */
+  .search-box {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .search-filter-row {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .filters-box {
+    flex-wrap: wrap !important;
+    width: 100% !important;
+  }
+
+  .filters-box > button,
+  .filters-box .select-wrapper {
+    flex: 1 1 calc(50% - 6px) !important;
+    min-width: 0 !important;
+  }
+
+  /* Tables: scroll only inside table, not the full page */
+  .table-responsive {
+    overflow-x: auto !important;
+    max-width: 100% !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Modal: constrained to screen */
+  .modal-box {
+    width: 94vw !important;
+    max-width: 94vw !important;
+    max-height: 88vh !important;
+    overflow-y: auto !important;
+    margin: auto !important;
+  }
+
+  /* Student profile sections: stack */
+  .profile-bio-card {
+    padding: 12px !important;
+  }
+
+  .bio-parent-info {
+    border-left: none !important;
+    padding-left: 0 !important;
+    width: 100% !important;
+    flex-direction: column !important;
+    margin-top: 10px !important;
+  }
+
+  .profile-action-buttons {
+    width: 100% !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+  }
+
+  .profile-action-buttons button {
+    flex: 1 1 calc(50% - 6px) !important;
+    min-width: 0 !important;
+  }
+
+  /* Language switch: compact */
+  .language-switch {
+    gap: 4px !important;
+  }
+
+  .lang-btn {
+    padding: 4px 10px !important;
+    font-size: 0.78rem !important;
+  }
+
+  /* Sidebar stays hidden off-screen — only active class shows it */
+  .app-sidebar {
+    max-width: 80vw !important;
+    width: 260px !important;
+  }
+
+  /* Bottom nav items: equal, no overflow */
+  .mnav-item {
+    flex: 1 !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    padding: 0 2px !important;
+  }
+
+  .mnav-item span {
+    font-size: 0.65rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: 100% !important;
+    display: block !important;
+  }
+
+  /* AI FAB stays above nav */
+  #ai-chat-fab {
+    bottom: calc(72px + var(--safe-bottom)) !important;
+    right: 14px !important;
+  }
+
+  /* Attendance & exam cards: full width */
+  .attendance-card,
+  .exam-card,
+  .fee-card,
+  .issue-card {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* Any row/grid not to overflow */
+  [class*="grid"],
+  [class*="row"],
+  [class*="flex"] {
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 380px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .app-main-content {
+    padding: 8px !important;
+    padding-bottom: calc(90px + var(--safe-bottom)) !important;
+  }
+
+  .mnav-item span {
+    font-size: 0.6rem !important;
+  }
+
+  .stat-card h3 {
+    font-size: 1rem !important;
+  }
+}
