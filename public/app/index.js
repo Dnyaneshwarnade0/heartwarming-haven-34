@@ -6640,19 +6640,6 @@ function setupAuthListeners() {
         btn.addEventListener('click', () => forgotModal.classList.remove('active'));
     });
 
-    // Download App button on login page
-    const btnDownloadApp = document.getElementById('btn-login-download-app');
-    const downloadAppMsg = document.getElementById('download-app-message');
-    if (btnDownloadApp) {
-        btnDownloadApp.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (downloadAppMsg) {
-                downloadAppMsg.classList.remove('d-none');
-                downloadAppMsg.style.display = 'block';
-            }
-            createToast('⏳ Wait 5 hours / ५ तासांनंतर प्रयत्न करा.', 'warning');
-        });
-    }
 
     // OTP workflow simulator
     document.getElementById('btn-send-otp').addEventListener('click', () => {
