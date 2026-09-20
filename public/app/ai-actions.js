@@ -160,19 +160,80 @@
             const s = findStudent(a);
             if (!s) return t('विद्यार्थी सापडला नाही.', 'Student not found.');
             try {
-                localStorage.setItem('vss_adarsh_week', JSON.stringify({
-                    studentId: s.id, note: String(a.note || ''), week: a.week || today()
-                }));
+                let list = [];
+                try { list = JSON.parse(localStorage.getItem('vss_adarsh_week') || '[]'); } catch (_) { list = []; }
+                if (!Array.isArray(list)) list = [list].filter(Boolean);
+                const wk = a.week || today();
+                list = list.filter(x => String(x.id || x.studentId) !== String(s.id));
+                list.push({
+                    week: wk,
+                    id: s.id,
+                    studentId: s.id,
+                    name: nameOf(s),
+                    rollNo: s.rollNo,
+                    note: String(a.note || a.reason || 'उत्कृष्ट पाठांतर व शिस्त')
+                });
+                localStorage.setItem('vss_adarsh_week', JSON.stringify(list));
             } catch (_) { }
+            save();
             refresh(s.id);
-            return t('आदर्श विद्यार्थी: ' + nameOf(s), 'Star student: ' + nameOf(s));
+            return t('⭐ ' + nameOf(s) + ' (Roll ' + s.rollNo + ') आदर्श विद्यार्थी म्हणून निवडले!', '⭐ ' + nameOf(s) + ' selected as Star Student!');
+        },
+
+        remove_adarsh: function (a) {
+            const s = findStudent(a);
+            if (!s) return t('विद्यार्थी सापडला नाही.', 'Student not found.');
+            try {
+                let list = [];
+                try { list = JSON.parse(localStorage.getItem('vss_adarsh_week') || '[]'); } catch (_) { list = []; }
+                if (Array.isArray(list)) {
+                    list = list.filter(x => String(x.id || x.studentId) !== String(s.id));
+                    localStorage.setItem('vss_adarsh_week', JSON.stringify(list));
+                }
+            } catch (_) { }
+            save();
+            refresh(s.id);
+            return t(nameOf(s) + ' आदर्श विद्यार्थी यादीतून काढले.', nameOf(s) + ' removed from star students list.');
+        },
+
+        set_blacklist: function (a) {
+            const s = findStudent(a);
+            if (!s) return t('विद्यार्थी सापडला नाही.', 'Student not found.');
+            s.blacklisted = true;
+            s.blacklistReason = String(a.reason || a.note || 'शिस्तभंग / गैरवर्तन');
+            save();
+            refresh(s.id);
+            return t('🚫 ' + nameOf(s) + ' (Roll ' + s.rollNo + ') यांना काळ्या यादीत (Blacklist) टाकले आहे.', '🚫 ' + nameOf(s) + ' added to blacklist.');
+        },
+
+        remove_blacklist: function (a) {
+            const s = findStudent(a);
+            if (!s) return t('विद्यार्थी सापडला नाही.', 'Student not found.');
+            s.blacklisted = false;
+            delete s.blacklistReason;
+            save();
+            refresh(s.id);
+            return t(nameOf(s) + ' यांना काळ्या यादीतून काढले आहे.', nameOf(s) + ' removed from blacklist.');
+        },
+
+        mark_all_present: function (a) {
+            const session = ['morning', 'evening', 'school'].indexOf(String(a.session)) >= 0 ? String(a.session) : 'morning';
+            const date = a.date || today();
+            students().forEach((s) => {
+                s.dailyAttendance = s.dailyAttendance || {};
+                s.dailyAttendance[date] = s.dailyAttendance[date] || {};
+                s.dailyAttendance[date][session] = true;
+            });
+            save();
+            refresh(null);
+            return t('✅ सर्व विद्यार्थी हजर नोंदवले — ' + date + ' (' + session + ')', 'All students marked present for ' + date + ' (' + session + ').');
         },
 
         mark_absent: function (a) {
             const session = ['morning', 'evening', 'school'].indexOf(String(a.session)) >= 0 ? String(a.session) : 'morning';
             const date = a.date || today();
-            const ids = Array.isArray(a.studentIds) ? a.studentIds.map(String) : [];
-            const rolls = Array.isArray(a.rollNos) ? a.rollNos.map(Number) : [];
+            const ids = Array.isArray(a.studentIds) ? a.studentIds.map(String) : (a.studentId ? [String(a.studentId)] : []);
+            const rolls = Array.isArray(a.rollNos) ? a.rollNos.map(Number) : (a.rollNo != null ? [Number(a.rollNo)] : []);
             if (!ids.length && !rolls.length) return t('कोणते विद्यार्थी गैरहजर हे कळले नाही.', 'No students given.');
             let n = 0;
             students().forEach((s) => {
@@ -195,6 +256,9 @@
     HANDLERS.remark = HANDLERS.add_remark;
     HANDLERS.fee = HANDLERS.add_fee;
     HANDLERS.attendance = HANDLERS.mark_absent;
+    HANDLERS.blacklist = HANDLERS.set_blacklist;
+    HANDLERS.unblacklist = HANDLERS.remove_blacklist;
+    HANDLERS.adarsh = HANDLERS.set_adarsh;
 
     window.vssApplyAiAction = function (action) {
         if (!action || typeof action !== 'object') return null;

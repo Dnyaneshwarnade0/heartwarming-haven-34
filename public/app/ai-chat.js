@@ -180,57 +180,70 @@
     }
 
     const SYSTEM_PROMPT = `You are "गुरुकुल सहाय्यक", the built-in AI assistant of a Marathi school student-management app (शांतीब्रह्म गुरुकुलम्).
-Your admin / user is "अंकुश महाराज" (Ankush Maharaj Kadam).
+Your admin / user is "अंकुश महाराज" (Ankush Maharaj Kadam). The user is non-technical, so always provide clear, simple, respectful, and structured answers in Marathi.
+
+ACTIONS YOU CAN EXECUTE TO SAVE DATA INTO THE SOFTWARE:
+Whenever the user asks you to perform an action (add complaint, record fee, mark star student, blacklist student, mark attendance, record remark, or record medical note), you MUST include a fenced \`\`\`action block with JSON at the end of your response:
+
+1. RECORD COMPLAINT:
+\`\`\`action
+{"type": "add_complaint", "rollNo": 11, "type": "शिस्तभंग", "action": "पालकांना सूचना दिली"}
+\`\`\`
+
+2. RECORD FEE PAYMENT:
+\`\`\`action
+{"type": "add_fee", "rollNo": 15, "amount": 5000, "mode": "Cash"}
+\`\`\`
+
+3. SELECT STAR / ADARSH STUDENT:
+\`\`\`action
+{"type": "set_adarsh", "rollNo": 25, "note": "उत्कृष्ट पाठांतर व शिस्त"}
+\`\`\`
+
+4. REMOVE STAR / ADARSH STUDENT:
+\`\`\`action
+{"type": "remove_adarsh", "rollNo": 25}
+\`\`\`
+
+5. BLACKLIST STUDENT:
+\`\`\`action
+{"type": "set_blacklist", "rollNo": 11, "reason": "शिस्तभंग / गैरवर्तन"}
+\`\`\`
+
+6. REMOVE FROM BLACKLIST:
+\`\`\`action
+{"type": "remove_blacklist", "rollNo": 11}
+\`\`\`
+
+7. MARK ATTENDANCE (ABSENT):
+\`\`\`action
+{"type": "mark_absent", "rollNos": [11, 15], "session": "morning"}
+\`\`\`
+
+8. MARK ALL PRESENT:
+\`\`\`action
+{"type": "mark_all_present", "session": "morning"}
+\`\`\`
 
 CORE BEHAVIOR RULES:
 1. GREETINGS:
-   If the user says "hi", "hii", "hello", "hey", "नमस्कार", "राम कृष्ण हरी" or greets you:
-   ALWAYS respond with:
+   If greeted ("hi", "नमस्कार", "राम कृष्ण हरी"), respond with:
    "🙏 राम कृष्ण हरी अंकुश महाराज! मी कशा प्रकारे तुमची मदत करू शकतो?"
-   and provide this exact options block:
    \`\`\`options
-   ["हजेरी (Attendance)", "विद्यार्थी माहिती व गुण", "फी व्यवहार (Fees)", "तक्रार नोंदवा"]
+   ["1️⃣ हजेरी घ्या", "2️⃣ विद्यार्थी माहिती", "7️⃣ फी व्यवहार", "4️⃣ तक्रार नोंदवा", "5️⃣ आदर्श विद्यार्थी", "🚫 काळी यादी"]
    \`\`\`
 
-2. NUMBER / ROLL NUMBER INQUIRY:
-   If the user enters a number between 1 and 72 (or asks about a roll number like "5", "roll 5", "५"):
-   - Understand immediately that this is a Roll Number query!
-   - Find the student with this rollNo in the snapshot.
-   - Present their details directly inside the chat: Name (नाव), Roll No (हजेरी क्रमांक), Class (इयत्ता), Parent Details, Fees, Attendance, and EVERY WEEK'S EXAM MARKS (आठवडा १ ते ९ चे गुण).
-   - DO NOT redirect or switch screens away from the chat! DO NOT emit open_student action. The user must stay inside the bot chat.
-   - And provide options:
-   \`\`\`options
-   ["📝 तक्रार नोंदवा", "💵 फी जमा करा", "दुसरा रोल नंबर शोधा", "🏠 मुख्य मेनू"]
-   \`\`\`
+2. STUDENT INQUIRIES:
+   When user asks about a specific student by roll number or name (e.g. "11 चे गुण", "15 ची फी", "25 चा इतिहास"):
+   - Find student in the snapshot.
+   - Answer ONLY what was requested clearly and concisely.
+   - Provide contextual follow-up options in \`\`\`options block.
 
-3. INVALID ROLL NUMBER:
-   If the user enters a number that does NOT exist in the school (not between 1 and 72):
-   Say:
-   "❌ हजेरी क्रमांक (Roll No.) **[Number]** गुरुकुलाच्या विद्यार्थी यादीत उपलब्ध नाही.
-   गुरुकुलामध्ये सध्या **१ ते ७२** हजेरी क्रमांक असलेले विद्यार्थी आहेत. कृपया १ ते ७२ मधील हजेरी क्रमांक टाका."
-   \`\`\`options
-   ["विद्यार्थी यादी", "हजेरी तपासा", "फी बाकी असणारे"]
-   \`\`\`
+3. CONTEXTUAL OPTIONS (CHIPS):
+   Always provide 3-4 clickable option chips inside \`\`\`options block at the end so the user can just tap instead of typing.
 
-4. DIRECT & SPECIFIC:
-   If the user's purpose/intent is clear, answer specifically and concisely with NO unnecessary filler.
-
-5. CLARIFICATION & CROSS-QUESTIONS:
-   If the user's intent is unclear or ambiguous, ask ONE short cross-question and provide options in the \`\`\`options block so the user can easily tap what they want.
-
-6. CONTEXTUAL OPTIONS (SCOPE):
-   Whenever there is scope to offer choices, ALWAYS end the message with a fenced \`\`\`options block containing 3-4 short options (under 6 words each).
-   - If talking about attendance (हजेरी):
-     \`\`\`options
-     ["सकाळची हजेरी (Morning)", "शाळेची हजेरी (School)", "संध्याकाळची हजेरी (Evening)", "आज गैरहजर असणारे"]
-     \`\`\`
-   - If talking about fees (फी):
-     \`\`\`options
-     ["शिल्लक फी यादी", "फी जमा करा", "पावत्या तपासा"]
-     \`\`\`
-
-7. LANGUAGE:
-   Always respond in clean, respectful Marathi (Devanagari).`;
+4. LANGUAGE:
+   Always respond in respectful, polite, and clear Marathi (Devanagari).`;
 
 
     /* उत्तर ॲपच्या सर्व्हरवरून किंवा थेट गुगल AI वरून जलद येते */
@@ -329,6 +342,9 @@ CORE BEHAVIOR RULES:
         const list = document.getElementById('bot-messages-list');
         if (!list) return;
 
+        // Smart scroll: only auto-scroll if user is already near the bottom
+        const wasAtBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 80;
+
         if (history.length === 0) {
             list.innerHTML = `
                 <div style="text-align: center; color: #64748B; padding: 24px 16px;">
@@ -366,7 +382,12 @@ CORE BEHAVIOR RULES:
         }
 
         list.innerHTML = html.join('');
-        list.scrollTop = list.scrollHeight;
+
+        // Only scroll to bottom automatically if user was already near bottom
+        // OR if it's a new send (isSending=true means user just sent something)
+        if (wasAtBottom || isSending) {
+            list.scrollTop = list.scrollHeight;
+        }
 
         // Render dynamic options from last assistant message
         const lastAsst = [...history].reverse().find((m) => m.role === 'assistant');
@@ -384,6 +405,7 @@ CORE BEHAVIOR RULES:
         }
         renderOptionsChips([]);
     }
+
 
     // Helper: Extract roll number from any format (English & Devanagari numerals)
     const extractRollNo = (str) => {
@@ -476,6 +498,109 @@ CORE BEHAVIOR RULES:
             }
         }
 
+        // 3b. Write Action: Add to Blacklist
+        if (rNum && /(?:ब्लॅकलिस्ट|काळी यादी|blacklist)/i.test(query) && /(?:करा|टाका|add|set)/i.test(query) && !/(?:काढा|हटवा|remove|unblacklist)/i.test(query)) {
+            const s = stus.find(x => Number(x.rollNo) === rNum);
+            if (s) {
+                s.blacklisted = true;
+                s.blacklistReason = 'शिस्तभंग / गैरवर्तन';
+                try {
+                    if (typeof saveDatabase === 'function') saveDatabase();
+                    else localStorage.setItem('vss_students', JSON.stringify(stus));
+                    if (window.vssCloud && typeof window.vssCloud.save === 'function') window.vssCloud.save();
+                    if (typeof renderStudentTable === 'function') renderStudentTable();
+                } catch (_) {}
+                return `🚫 **विद्यार्थ्याला काळ्या यादीत (Blacklist) टाकले आहे!**\n\n• **विद्यार्थी:** ${nameOf(s)} (Roll No. ${s.rollNo})\n• **स्थिती:** ⚠️ काळी यादी (Blacklisted)\n• **नोंद:** शिस्तभंग / गैरवर्तन\n\n\`\`\`options\n["🚫 काळी यादी दाखवा", "👤 ${s.rollNo} ची माहिती", "🏠 मुख्य मेनू"]\n\`\`\``;
+            }
+        }
+
+        // 3c. Write Action: Remove from Blacklist
+        if (rNum && /(?:ब्लॅकलिस्ट|काळी यादी|blacklist)/i.test(query) && /(?:काढा|हटवा|remove|unblacklist|मुक्त)/i.test(query)) {
+            const s = stus.find(x => Number(x.rollNo) === rNum);
+            if (s) {
+                s.blacklisted = false;
+                delete s.blacklistReason;
+                try {
+                    if (typeof saveDatabase === 'function') saveDatabase();
+                    else localStorage.setItem('vss_students', JSON.stringify(stus));
+                    if (window.vssCloud && typeof window.vssCloud.save === 'function') window.vssCloud.save();
+                    if (typeof renderStudentTable === 'function') renderStudentTable();
+                } catch (_) {}
+                return `✅ **विद्यार्थ्याला काळ्या यादीतून (Blacklist) काढले आहे!**\n\n• **विद्यार्थी:** ${nameOf(s)} (Roll No. ${s.rollNo})\n• **स्थिती:** सामान्य (Active)\n\n\`\`\`options\n["👤 ${s.rollNo} ची माहिती", "🏠 मुख्य मेनू"]\n\`\`\``;
+            }
+        }
+
+        // 3d. Write Action: Set Adarsh Student
+        if (rNum && /(?:आदर्श|star|adarsh)/i.test(query) && /(?:करा|निवडा|add|set)/i.test(query) && !/(?:काढा|हटवा|remove)/i.test(query)) {
+            const s = stus.find(x => Number(x.rollNo) === rNum);
+            if (s) {
+                try {
+                    let list = [];
+                    try { list = JSON.parse(localStorage.getItem('vss_adarsh_week') || '[]'); } catch (_) { list = []; }
+                    if (!Array.isArray(list)) list = [list].filter(Boolean);
+                    const todayWk = new Date().toISOString().slice(0, 10);
+                    list = list.filter(x => String(x.id || x.studentId) !== String(s.id));
+                    list.push({ week: todayWk, id: s.id, studentId: s.id, name: nameOf(s), rollNo: s.rollNo, note: 'उत्कृष्ट पाठांतर व शिस्त' });
+                    localStorage.setItem('vss_adarsh_week', JSON.stringify(list));
+                    if (typeof saveDatabase === 'function') saveDatabase();
+                    if (window.vssCloud && typeof window.vssCloud.save === 'function') window.vssCloud.save();
+                    if (typeof renderStudentTable === 'function') renderStudentTable();
+                } catch (_) {}
+                return `⭐ **${nameOf(s)} (Roll No. ${s.rollNo}) यांना आदर्श विद्यार्थी म्हणून निवडले आहे!**\n\n• **विद्यार्थी:** ${nameOf(s)}\n• **हजेरी क्र.:** ${s.rollNo}\n• **नोंद:** उत्कृष्ट पाठांतर व शिस्त\n\n\`\`\`options\n["⭐ आदर्श विद्यार्थी यादी", "👤 ${s.rollNo} ची माहिती", "🏠 मुख्य मेनू"]\n\`\`\``;
+            }
+        }
+
+        // 3e. Write Action: Remove from Adarsh Student
+        if (rNum && /(?:आदर्श|star|adarsh)/i.test(query) && /(?:काढा|हटवा|remove)/i.test(query)) {
+            const s = stus.find(x => Number(x.rollNo) === rNum);
+            if (s) {
+                try {
+                    let list = [];
+                    try { list = JSON.parse(localStorage.getItem('vss_adarsh_week') || '[]'); } catch (_) { list = []; }
+                    if (Array.isArray(list)) {
+                        list = list.filter(x => String(x.id || x.studentId) !== String(s.id));
+                        localStorage.setItem('vss_adarsh_week', JSON.stringify(list));
+                    }
+                    if (typeof saveDatabase === 'function') saveDatabase();
+                    if (window.vssCloud && typeof window.vssCloud.save === 'function') window.vssCloud.save();
+                    if (typeof renderStudentTable === 'function') renderStudentTable();
+                } catch (_) {}
+                return `✅ **${nameOf(s)} (Roll No. ${s.rollNo}) यांना आदर्श विद्यार्थी यादीतून काढले आहे.**\n\n\`\`\`options\n["⭐ आदर्श विद्यार्थी यादी", "🏠 मुख्य मेनू"]\n\`\`\``;
+            }
+        }
+
+        // 3f. Query: Blacklisted Students List
+        if (/(?:काळी यादी|ब्लॅकलिस्ट यादी|blacklisted|ब्लॅकलिस्ट विद्यार्थी|कोणावर कारवाई)/i.test(lower)) {
+            const bList = stus.filter(s => !!s.blacklisted);
+            if (bList.length === 0) {
+                return `✅ **गुरुकुलामध्ये सध्या कोणताही विद्यार्थी काळ्या यादीत (Blacklist) नाही!**\n\nसर्व विद्यार्थ्यांची वर्तणूक समाधानकारक आहे.\n\n\`\`\`options\n["1️⃣ हजेरी घ्या", "2️⃣ विद्यार्थी माहिती", "🏠 मुख्य मेनू"]\n\`\`\``;
+            }
+            const bLines = bList.map((s, i) => `${i + 1}. 🚫 **Roll ${s.rollNo}:** ${nameOf(s)} (${s.blacklistReason || 'शिस्तभंग'})\n   📞 पालक: ${s.phone || 'नोंद नाही'}`).join('\n\n');
+            return `🚫 **काळ्या यादीतील विद्यार्थी (Blacklisted — ${bList.length}):**\n\n${bLines}\n\n💡 *टीप: विद्यार्थ्याला काळ्या यादीतून काढण्यासाठी 'roll [नंबर] ला ब्लॅकलिस्ट मधून काढा' असे टाइप करा.*\n\n\`\`\`options\n["सर्व तक्रारींची यादी", "4️⃣ तक्रार नोंदवा", "🏠 मुख्य मेनू"]\n\`\`\``;
+        }
+
+        // 3g. Action: Mark All Present for Today
+        if (/(?:सर्व हजर|all present|सगळे हजर|सर्व उपस्थित)/i.test(lower)) {
+            const now = new Date();
+            const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const todayFmt = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()}`;
+            stus.forEach(s => {
+                s.dailyAttendance = s.dailyAttendance || {};
+                s.dailyAttendance[todayKey] = s.dailyAttendance[todayKey] || {};
+                s.dailyAttendance[todayKey].morning = true;
+                s.dailyAttendance[todayKey].school = true;
+                s.dailyAttendance[todayKey].evening = true;
+            });
+            try {
+                if (typeof saveDatabase === 'function') saveDatabase();
+                else localStorage.setItem('vss_students', JSON.stringify(stus));
+                if (window.vssCloud && typeof window.vssCloud.save === 'function') window.vssCloud.save();
+                if (typeof renderDashboardMetrics === 'function') renderDashboardMetrics();
+                if (typeof renderStudentTable === 'function') renderStudentTable();
+            } catch (_) {}
+            return `✅ **आज सर्व ${stus.length} विद्यार्थी हजर नोंदवले आहेत!**\n📅 **तारीख:** ${todayFmt}\n• सकाळ: ✅ सर्व हजर\n• शाळा: ✅ सर्व हजर\n• संध्याकाळ: ✅ सर्व हजर\n\n\`\`\`options\n["1️⃣ हजेरी अहवाल", "7️⃣ फी व्यवहार", "🏠 मुख्य मेनू"]\n\`\`\``;
+        }
+
         // 4. Specific Student Complaint Query: e.g. "11 ची तक्रार", "roll 11 complaint", "११ (संगम तोडकर तक्रारी)"
         if (rNum && /(?:तक्रार|गैरशिस्त|complaint)/i.test(lower)) {
             const s = stus.find(x => Number(x.rollNo) === rNum);
@@ -559,11 +684,16 @@ CORE BEHAVIOR RULES:
         }
 
         // 8. Roll Number Entered -> Show ALL Student Details
+        // Only show full profile when: user typed JUST a roll number (or "roll 5") — not menu chips
         const isMenuEmoji = /^[1-9]️⃣|🔟|📊|🎓|🧾|📝|🏠|📚|✏️/.test(query);
         const isWriteAct = /(?:add|करा|जमा|नोंदवा)\s*(?:complaint|fee|remark|medical|तक्रार|फी|शेरा)/i.test(query) ||
                            /(?:तक्रार|फी|शेरा|नोंद)\s*(?:करा|नोंदवा|घ्या|जमा)/i.test(query);
+        // Pure roll number: query is ONLY digits (or "roll X" format), no other meaningful text
+        const isPureRollQuery = /^(roll\s*(no\.?\s*)?)?\d{1,3}$/.test(lower) ||
+                                /^(हजेरी\s*क्र\.?\s*)?\d{1,3}$/.test(lower) ||
+                                /^[०-९]{1,3}$/.test(lower.trim());
 
-        if (rNum && !isMenuEmoji && !isWriteAct) {
+        if (rNum && isPureRollQuery && !isMenuEmoji && !isWriteAct) {
             if (rNum < 1 || rNum > 72) {
                 return `❌ हजेरी क्रमांक (Roll No.) **${rNum}** गुरुकुलाच्या विद्यार्थी यादीत उपलब्ध नाही.\n\nगुरुकुलामध्ये सध्या **१ ते ७२** हजेरी क्रमांक असलेले विद्यार्थी आहेत. कृपया १ ते ७२ मधील हजेरी क्रमांक टाका.\n\n\`\`\`options\n["१ (अवधूत गाडेकर)", "२ (यश खरात)", "११ (संगम तोडकर)", "१५ (लक्की बाघुल)", "३५ (वेदांत गव्हाणे)", "🏠 मुख्य मेनू"]\n\`\`\``;
             }

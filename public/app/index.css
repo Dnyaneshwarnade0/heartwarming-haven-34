@@ -2351,12 +2351,52 @@ body.drawer-open { overflow: hidden; }
     margin: 0;
     font-size: 1.05rem;
     font-weight: 700;
+    color: #ffffff !important;
 }
 
 .bot-panel-header p {
     margin: 2px 0 0;
     font-size: 0.78rem;
-    opacity: 0.85;
+    color: rgba(255, 255, 255, 0.92) !important;
+}
+
+/* Badges for Adarsh and Blacklisted students */
+.badge-adarsh {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #FEF3C7;
+    color: #B45309;
+    border: 1px solid #FCD34D;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.badge-blacklisted {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #FEE2E2;
+    color: #B91C1C;
+    border: 1px solid #FCA5A5;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+/* Hide floating bot icon when bot panel is active */
+body.panel-bot-active #ai-chat-fab {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
 .bot-header-actions {

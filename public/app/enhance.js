@@ -515,7 +515,7 @@
                     stud.dailyAttendance[date][dtSession] = !b.checked;
                 });
                 persist();
-                toast(`${L('saved')} (${absentLbl}: ${absentees.length})`);
+                toast(L('saved'));
                 refreshEverywhere();
                 renderAttendanceTask();
             }, { confirmLabel: en ? 'Yes, save' : 'होय, जतन करा', danger: false });

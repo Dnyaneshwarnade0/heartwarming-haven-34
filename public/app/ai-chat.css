@@ -125,7 +125,23 @@
     z-index: 4001;
 }
 
-#ai-chat-panel.d-none { display: none !important; }
+#bot-panel-title,
+.bot-panel-header h3 {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
+#bot-panel-subtitle,
+.bot-panel-header p {
+    color: rgba(255, 255, 255, 0.92) !important;
+}
+
+body.panel-bot-active #ai-chat-fab {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
 
 .ai-chat-head {
     display: flex;

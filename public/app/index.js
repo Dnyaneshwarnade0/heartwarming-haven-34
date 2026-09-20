@@ -6742,6 +6742,16 @@ function switchPanel(panelId) {
         window.vssRenderBotChat();
     }
     
+    // FAB: hide when bot panel is open (no point showing it), show otherwise
+    const fab = document.getElementById('ai-chat-fab');
+    if (fab) {
+        if (panelId === 'panel-bot') {
+            fab.style.display = 'none';
+        } else {
+            fab.style.display = '';
+        }
+    }
+    
     // Sidebar Active Highlight sync
     document.querySelectorAll('.sidebar-menu .menu-item').forEach(item => {
         const isMatched = item.getAttribute('data-target') === panelId;
@@ -6763,6 +6773,7 @@ function switchPanel(panelId) {
     // Update titles
     updatePageTitle();
 }
+
 
 function openMobileDrawer() {
     document.getElementById('app-sidebar').classList.add('active');
@@ -7073,7 +7084,19 @@ function renderStudentTable() {
     const searchVal = document.getElementById('search-student').value.toLowerCase().trim();
     const classFilter = document.getElementById('filter-class').value;
     const sectionFilter = document.getElementById('filter-section').value;
+    const specialFilter = document.getElementById('filter-special')?.value || '';
     
+    // Load Adarsh student IDs
+    let adarshIds = [];
+    try {
+        const raw = localStorage.getItem('vss_adarsh_week');
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) adarshIds = parsed.map(p => String(p.id || p.studentId));
+            else if (parsed && parsed.studentId) adarshIds = [String(parsed.studentId)];
+        }
+    } catch (_) {}
+
     // Filter
     let filtered = records.filter(stud => {
         const nameMatch = typeof stud.name === 'object' ? 
@@ -7087,7 +7110,18 @@ function renderStudentTable() {
         const matchesClass = classFilter === "" ? true : stud.standard === classFilter;
         const matchesSection = sectionFilter === "" ? true : stud.section === sectionFilter;
 
-        return matchesSearch && matchesClass && matchesSection;
+        let matchesSpecial = true;
+        if (specialFilter === 'adarsh') {
+            matchesSpecial = adarshIds.includes(String(stud.id));
+        } else if (specialFilter === 'blacklisted') {
+            matchesSpecial = !!stud.blacklisted;
+        } else if (specialFilter === 'fees_due') {
+            const tot = Number(stud.fees?.total || 0);
+            const pd = Number(stud.fees?.paid || 0);
+            matchesSpecial = (tot - pd) > 0;
+        }
+
+        return matchesSearch && matchesClass && matchesSection && matchesSpecial;
     });
 
     // Sort
@@ -7122,13 +7156,11 @@ function renderStudentTable() {
         : { roll: 'Roll No', cls: 'Class', phone: 'Phone', parent: 'Parent', due: 'Fees Due', paid: 'Fees Paid', view: 'View Details' };
 
     filtered.forEach(stud => {
-        // Student Photo only (no initials placeholder)
         const studentNameStr = getStudentName(stud);
 
         const avatarHTML = stud.photo ?
             `<img src="${stud.photo}" alt="${studentNameStr}">` :
             `<i class="fa-regular fa-user"></i>`;
-
 
         const classStr = (stud.standard || stud.section)
             ? `${stud.standard || ''}${stud.section ? '-' + stud.section : ''}`
@@ -7143,9 +7175,15 @@ function renderStudentTable() {
             ? `<span class="fee-pill fee-pill-due">₹${due.toLocaleString('en-IN')} ${L.due}</span>`
             : `<span class="fee-pill fee-pill-ok"><i class="fa-solid fa-check"></i> ${L.paid}</span>`;
 
+        // Badges for Adarsh / Blacklist
+        const isAdarsh = adarshIds.includes(String(stud.id));
+        const isBlacklisted = !!stud.blacklisted;
+        const adarshBadgeHTML = isAdarsh ? `<span class="badge-adarsh"><i class="fa-solid fa-star" style="color:#f59e0b;"></i> आदर्श</span>` : '';
+        const blacklistBadgeHTML = isBlacklisted ? `<span class="badge-blacklisted"><i class="fa-solid fa-ban" style="color:#ef4444;"></i> काळी यादी</span>` : '';
+
         // Render Row
         const tr = document.createElement('tr');
-        tr.className = 'student-row';
+        tr.className = 'student-row' + (isBlacklisted ? ' row-blacklisted' : '');
         tr.setAttribute('role', 'button');
         tr.setAttribute('tabindex', '0');
         tr.setAttribute('data-roll', stud.rollNo);
@@ -7160,6 +7198,8 @@ function renderStudentTable() {
             </td>
             <td class="cell-name">
                 <span class="table-student-name" title="${L.view}">${studentNameStr}</span>
+                ${adarshBadgeHTML}
+                ${blacklistBadgeHTML}
             </td>
             <td data-label="${L.cls}" class="${(stud.standard || stud.section) ? '' : 'cell-empty'}">${classStr}</td>
             <td data-label="${L.phone}" class="${stud.phone ? '' : 'cell-empty'}">${phoneStr}</td>
@@ -7174,7 +7214,6 @@ function renderStudentTable() {
             </td>
         `;
         tbody.appendChild(tr);
-
     });
 }
 
@@ -7188,6 +7227,7 @@ function setupStudentDirectoryListeners() {
     // Filters
     document.getElementById('filter-class').addEventListener('change', renderStudentTable);
     document.getElementById('filter-section').addEventListener('change', renderStudentTable);
+    document.getElementById('filter-special')?.addEventListener('change', renderStudentTable);
 
     // Sorting A-Z/Z-A toggle
     const btnSort = document.getElementById('btn-sort');
@@ -7416,6 +7456,76 @@ window.renderStudentProfile = function(studentId) {
     document.getElementById('prof-phone').textContent = activeStudentData.phone;
     document.getElementById('prof-parent').textContent = activeStudentData.parentName;
     document.getElementById('prof-emergency').textContent = activeStudentData.emergencyContact;
+
+    // Adarsh & Blacklist Status in Profile
+    let adarshList = [];
+    try {
+        const rawAd = localStorage.getItem('vss_adarsh_week');
+        if (rawAd) {
+            const p = JSON.parse(rawAd);
+            adarshList = Array.isArray(p) ? p : [p].filter(Boolean);
+        }
+    } catch (_) { adarshList = []; }
+
+    const isCurrentAdarsh = adarshList.some(x => String(x.id || x.studentId) === String(selectedStudent.id));
+    const isCurrentBlacklisted = !!selectedStudent.blacklisted;
+
+    const btnAdarsh = document.getElementById('btn-toggle-adarsh');
+    const lblAdarsh = document.getElementById('lbl-toggle-adarsh');
+    if (btnAdarsh && lblAdarsh) {
+        if (isCurrentAdarsh) {
+            btnAdarsh.style.background = '#FEF3C7';
+            lblAdarsh.textContent = currentLanguage === 'en' ? '⭐ Star Student (Active)' : '⭐ आदर्श विद्यार्थी (निवडलेले)';
+        } else {
+            btnAdarsh.style.background = '';
+            lblAdarsh.textContent = currentLanguage === 'en' ? '⭐ Make Star Student' : '⭐ आदर्श विद्यार्थी करा';
+        }
+        btnAdarsh.onclick = () => {
+            let list = [];
+            try { list = JSON.parse(localStorage.getItem('vss_adarsh_week') || '[]'); } catch (_) { list = []; }
+            if (!Array.isArray(list)) list = [list].filter(Boolean);
+            if (isCurrentAdarsh) {
+                list = list.filter(x => String(x.id || x.studentId) !== String(selectedStudent.id));
+                createToast(currentLanguage === 'en' ? 'Removed from star students.' : 'आदर्श विद्यार्थी यादीतून काढले.', 'info');
+            } else {
+                const todayWk = new Date().toISOString().slice(0, 10);
+                list.push({ week: todayWk, id: selectedStudent.id, studentId: selectedStudent.id, name: studentNameStr, rollNo: selectedStudent.rollNo, note: 'उत्कृष्ट शिस्त व अभ्यास' });
+                createToast(currentLanguage === 'en' ? 'Selected as Star Student!' : '⭐ आदर्श विद्यार्थी म्हणून निवडले!', 'success');
+            }
+            localStorage.setItem('vss_adarsh_week', JSON.stringify(list));
+            saveDatabase();
+            if (window.vssCloud && typeof window.vssCloud.save === 'function') window.vssCloud.save();
+            renderStudentProfile(selectedStudent.id);
+            renderStudentTable();
+        };
+    }
+
+    const btnBlacklist = document.getElementById('btn-toggle-blacklist');
+    const lblBlacklist = document.getElementById('lbl-toggle-blacklist');
+    if (btnBlacklist && lblBlacklist) {
+        if (isCurrentBlacklisted) {
+            btnBlacklist.style.background = '#FEE2E2';
+            lblBlacklist.textContent = currentLanguage === 'en' ? '🚫 Blacklisted (Active)' : '🚫 काळी यादी (टाकलेले)';
+        } else {
+            btnBlacklist.style.background = '';
+            lblBlacklist.textContent = currentLanguage === 'en' ? '🚫 Add to Blacklist' : '🚫 काळी यादीत टाका';
+        }
+        btnBlacklist.onclick = () => {
+            if (isCurrentBlacklisted) {
+                selectedStudent.blacklisted = false;
+                delete selectedStudent.blacklistReason;
+                createToast(currentLanguage === 'en' ? 'Removed from blacklist.' : 'काळ्या यादीतून काढले.', 'success');
+            } else {
+                selectedStudent.blacklisted = true;
+                selectedStudent.blacklistReason = 'शिस्तभंग / गैरवर्तन';
+                createToast(currentLanguage === 'en' ? 'Student added to blacklist!' : 'विद्यार्थ्याला काळ्या यादीत (Blacklist) टाकले!', 'danger');
+            }
+            saveDatabase();
+            if (window.vssCloud && typeof window.vssCloud.save === 'function') window.vssCloud.save();
+            renderStudentProfile(selectedStudent.id);
+            renderStudentTable();
+        };
+    }
 
     // TAB 1: Attendance Grid
     renderAttendanceGrid();

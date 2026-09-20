@@ -48,11 +48,11 @@
       }
     </script>
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="index.css?v=13" />
+    <link rel="stylesheet" href="index.css?v=14" />
     <link rel="stylesheet" href="enhance.css?v=17" />
-    <link rel="stylesheet" href="ai-chat.css?v=19" />
+    <link rel="stylesheet" href="ai-chat.css?v=20" />
     <link rel="stylesheet" href="manage.css?v=3" />
-    <link rel="stylesheet" href="pwa.css?v=2" />
+    <link rel="stylesheet" href="pwa.css?v=3" />
   </head>
   <body>
     <!-- ======================================================== -->
@@ -355,6 +355,16 @@
                     </select>
                   </div>
 
+                  <div class="select-wrapper">
+                    <label class="sr-only">Special Filter</label>
+                    <select id="filter-special" style="font-weight: 600;">
+                      <option value="">सर्व विद्यार्थी (All)</option>
+                      <option value="adarsh">⭐ आदर्श विद्यार्थी (Star)</option>
+                      <option value="blacklisted">🚫 काळी यादी (Blacklisted)</option>
+                      <option value="fees_due">🔴 फी बाकी (Fees Due)</option>
+                    </select>
+                  </div>
+
                   <button id="btn-sort" class="btn-secondary" title="Sort A-Z / Z-A">
                     <i class="fa-solid fa-sort-alpha-down"></i> <span id="sort-label">A-Z</span>
                   </button>
@@ -433,6 +443,12 @@
                 </div>
               </div>
               <div class="profile-action-buttons">
+                <button id="btn-toggle-adarsh" class="btn-secondary" style="color: #b45309; border-color: #fcd34d;">
+                  <i class="fa-solid fa-star"></i> <span id="lbl-toggle-adarsh">आदर्श विद्यार्थी</span>
+                </button>
+                <button id="btn-toggle-blacklist" class="btn-secondary" style="color: #b91c1c; border-color: #fca5a5;">
+                  <i class="fa-solid fa-ban"></i> <span id="lbl-toggle-blacklist">काळी यादी</span>
+                </button>
                 <button id="btn-trigger-sms" class="btn-secondary text-orange">
                   <i class="fa-solid fa-paper-plane"></i> <span data-key="btn-send-alert">Send Alert</span>
                 </button>
