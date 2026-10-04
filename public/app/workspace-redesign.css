@@ -1,0 +1,320 @@
+:root {
+  --workspace-paper: #f5efe2;
+  --workspace-card: #fffdf8;
+  --workspace-ink: #27251f;
+  --workspace-rust: #9a3428;
+  --workspace-line: rgba(39, 37, 31, 0.15);
+  --workspace-muted: rgba(39, 37, 31, 0.58);
+}
+
+body {
+  font-family: "IBM Plex Sans", sans-serif !important;
+  color: var(--workspace-ink) !important;
+  background: var(--workspace-paper) !important;
+}
+
+h1, h2, h3, .header-title, .auth-logo h2, .profile-summary-card h2 {
+  font-family: "Libre Baskerville", serif !important;
+  letter-spacing: 0 !important;
+}
+
+.app-wrapper {
+  background: var(--workspace-paper) !important;
+}
+
+.app-sidebar {
+  width: 216px !important;
+  min-width: 216px !important;
+  background: var(--workspace-ink) !important;
+  border-right: 0 !important;
+}
+
+.sidebar-header {
+  min-height: 76px !important;
+  padding: 16px !important;
+  border-bottom-color: rgba(255, 253, 248, 0.12) !important;
+}
+
+.sidebar-logo h3,
+.sidebar-logo p,
+.sidebar-footer h4,
+.sidebar-footer p,
+.btn-logout-sidebar {
+  color: var(--workspace-card) !important;
+}
+
+.sidebar-menu {
+  padding: 14px 10px !important;
+}
+
+.sidebar-menu::before {
+  content: "मेनू  /  MENU";
+  display: block;
+  padding: 0 10px 10px;
+  color: rgba(255, 253, 248, 0.42);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+}
+
+.sidebar-menu .menu-item {
+  min-height: 38px !important;
+  margin: 2px 0 !important;
+  padding: 9px 10px !important;
+  border-radius: 4px !important;
+  color: rgba(255, 253, 248, 0.72) !important;
+  font-size: 13px !important;
+}
+
+.sidebar-menu .menu-item.active {
+  background: rgba(154, 52, 40, 0.28) !important;
+  color: var(--workspace-card) !important;
+  box-shadow: inset 2px 0 0 var(--workspace-rust) !important;
+}
+
+.app-content-wrapper {
+  min-width: 0 !important;
+  background: transparent !important;
+}
+
+.app-header {
+  height: 76px !important;
+  padding: 0 22px !important;
+  background: rgba(255, 253, 248, 0.78) !important;
+  border-bottom: 1px solid var(--workspace-line) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(14px);
+}
+
+.header-title {
+  font-size: 18px !important;
+}
+
+.app-main-content {
+  padding: 20px 22px 36px !important;
+  background: var(--workspace-paper) !important;
+}
+
+#panel-dashboard {
+  max-width: 1040px;
+}
+
+.stats-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.stat-card,
+.controls-card,
+.content-card,
+.profile-summary-card,
+.profile-tabs-card,
+.profile-tab-content,
+.workspace-priority,
+.workspace-student-context {
+  background: rgba(255, 253, 248, 0.82) !important;
+  border: 1px solid var(--workspace-line) !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+}
+
+#panel-students {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+#panel-students::before {
+  content: "Student register · सर्व सक्रिय विद्यार्थी";
+  display: block;
+  margin: -6px 0 12px;
+  color: var(--workspace-muted);
+  font-size: 12px;
+}
+
+.controls-card {
+  margin-bottom: 12px !important;
+  padding: 14px !important;
+}
+
+.search-filter-row {
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.search-box {
+  min-width: 220px !important;
+  max-width: 340px !important;
+}
+
+.search-box input,
+.filters-box select,
+.form-control {
+  border-color: var(--workspace-line) !important;
+  border-radius: 4px !important;
+  background: rgba(245, 239, 226, 0.64) !important;
+  color: var(--workspace-ink) !important;
+  box-shadow: none !important;
+}
+
+.filters-box {
+  gap: 7px !important;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-table-action {
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  font-family: "IBM Plex Sans", sans-serif !important;
+}
+
+.btn-primary {
+  background: var(--workspace-ink) !important;
+  border-color: var(--workspace-ink) !important;
+  color: var(--workspace-card) !important;
+}
+
+#btn-mark-attendance {
+  background: var(--workspace-rust) !important;
+  border-color: var(--workspace-rust) !important;
+  color: var(--workspace-card) !important;
+}
+
+#students-table {
+  table-layout: fixed;
+}
+
+.data-table thead th {
+  background: var(--workspace-ink) !important;
+  color: rgba(255, 253, 248, 0.78) !important;
+  padding: 9px 12px !important;
+  font-size: 10px !important;
+  letter-spacing: 0.08em !important;
+  border: 0 !important;
+}
+
+.data-table tbody td {
+  padding: 9px 12px !important;
+  border-color: rgba(39, 37, 31, 0.1) !important;
+  color: var(--workspace-ink) !important;
+  font-size: 12px !important;
+}
+
+.student-row {
+  background: transparent !important;
+  transition: background-color 150ms ease, box-shadow 150ms ease !important;
+}
+
+.student-row:hover,
+.student-row.is-context-selected {
+  background: rgba(154, 52, 40, 0.055) !important;
+  box-shadow: inset 2px 0 0 var(--workspace-rust) !important;
+}
+
+.table-avatar-badge {
+  background: rgba(154, 52, 40, 0.1) !important;
+  border: 1px solid rgba(154, 52, 40, 0.18) !important;
+}
+
+.table-student-name {
+  color: var(--workspace-ink) !important;
+  font-weight: 600 !important;
+}
+
+/* Human-readable directory typography on mobile and desktop. */
+#students-table, #students-table td, #students-table .table-student-name,
+.student-row, .student-row .fee-pill, .student-row .btn-table-action {
+  font-family: "IBM Plex Sans", Arial, sans-serif !important;
+  letter-spacing: 0 !important;
+}
+#students-table .table-student-name {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+.fee-pill {
+  border-radius: 4px !important;
+}
+
+.fee-pill-due {
+  background: rgba(154, 52, 40, 0.1) !important;
+  color: var(--workspace-rust) !important;
+}
+
+.fee-pill-ok {
+  background: rgba(39, 37, 31, 0.08) !important;
+  color: var(--workspace-ink) !important;
+}
+
+/* Must follow archival-theme.css: keep the first dashboard metric readable. */
+.stats-grid .stat-card:first-child h3,
+.stats-grid .stat-card:first-child p {
+  color: var(--workspace-ink) !important;
+  opacity: 1 !important;
+}
+
+@media (min-width: 1240px) {
+  #panel-students { max-width: 100%; }
+}
+
+@media (max-width: 768px) {
+  .app-sidebar { width: 260px !important; }
+  .app-header { height: 64px !important; padding: 0 14px !important; }
+  .app-main-content { padding: 14px 12px 84px !important; }
+  .controls-card { padding: 10px !important; }
+  .search-box { max-width: none !important; }
+  .filters-box { display: grid !important; grid-template-columns: 1fr 1fr; width: 100%; }
+  .filters-box .btn-primary { grid-column: 1 / -1; }
+  .data-table { table-layout: auto !important; }
+
+  /* Student directory: clearer, more confident mobile cards. */
+  #students-table tbody tr.student-row {
+    border: 1px solid var(--workspace-line) !important;
+    border-left: 4px solid var(--workspace-rust) !important;
+    border-radius: 14px !important;
+    padding: 18px 16px 16px 78px !important;
+    margin-bottom: 14px !important;
+    background: linear-gradient(135deg, #fffdf8 0%, #f8f0df 100%) !important;
+    box-shadow: 0 8px 20px rgba(39, 37, 31, 0.10) !important;
+  }
+  #students-table .cell-photo { left: 16px !important; top: 18px !important; }
+  #students-table .table-avatar-badge {
+    width: 48px !important;
+    height: 48px !important;
+    border: 2px solid #fffdf8 !important;
+    box-shadow: 0 4px 10px rgba(39, 37, 31, 0.16) !important;
+  }
+  #students-table .table-student-name {
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.01em !important;
+  }
+  #students-table td[data-label] {
+    display: inline-block !important;
+    margin: 8px 10px 0 0 !important;
+    padding: 5px 9px !important;
+    border-radius: 999px !important;
+    background: rgba(39, 37, 31, 0.06) !important;
+    color: var(--workspace-ink) !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+  }
+  #students-table td[data-label]::before { font-size: 11px !important; }
+  #students-table .cell-fees {
+    display: block !important;
+    margin-top: 10px !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+  #students-table .fee-pill { border-radius: 8px !important; padding: 8px 10px !important; font-weight: 800 !important; }
+  #students-table .btn-table-action.view {
+    min-height: 46px !important;
+    border-radius: 9px !important;
+    background: var(--workspace-rust) !important;
+    color: #fffdf8 !important;
+    box-shadow: 0 5px 12px rgba(154, 52, 40, 0.22) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
