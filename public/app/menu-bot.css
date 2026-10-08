@@ -1,0 +1,11 @@
+#panel-bot .mb-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+#panel-bot .mb-stack { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 10px; }
+#panel-bot .mb-stack .mb-opt { width: 100%; justify-content: flex-start; text-align: left; }
+#panel-bot .mb-opt { cursor: pointer; }
+#panel-bot #bot-panel-title { color: #fff; }
+#panel-bot .bot-avatar-logo { width: 30px; height: 30px; object-fit: contain; border-radius: 50%; }
+#panel-bot .mb-opt.mb-on { background: #DC2626; color: #fff; border-color: #DC2626; }
+#panel-bot .mb-opt.mb-primary { background: #1B3A6B; color: #fff; border-color: #1B3A6B; }
+#panel-bot .mb-opt.mb-back { opacity: .8; }
+#panel-bot .mb-search { width: 100%; margin-top: 10px; padding: 8px 10px; border: 1px solid #CBD5E1; border-radius: 8px; font: inherit; }
+#panel-bot .bot-msg-bubble { max-width: 100%; }
