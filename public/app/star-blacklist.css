@@ -1,0 +1,168 @@
+/* =========================================================
+   आदर्श विद्यार्थी + काळी यादी — स्वतंत्र स्तर
+   (मूळ स्क्रिप्ट्सना स्पर्श न करता वेगळी शैली)
+   ========================================================= */
+
+.sb-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.sb-head h2 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: 0.2px;
+}
+
+.sb-head p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.sb-card {
+  background: var(--card-bg, #fff);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 18px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.sb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.sb-grid .form-group {
+  margin: 0;
+}
+
+.sb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.sb-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(212, 160, 23, 0.16), rgba(212, 160, 23, 0.04));
+  border: 1px solid rgba(212, 160, 23, 0.35);
+  margin-bottom: 18px;
+}
+
+.sb-hero .sb-medal {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  color: #8a6100;
+  background: rgba(212, 160, 23, 0.25);
+}
+
+.sb-hero h3 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.sb-hero span {
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.sb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.sb-table th,
+.sb-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+  vertical-align: top;
+}
+
+.sb-table th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  opacity: 0.6;
+}
+
+.sb-empty {
+  padding: 26px;
+  text-align: center;
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+.sb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sb-chip.danger {
+  background: rgba(190, 40, 40, 0.12);
+  color: #a52222;
+}
+
+.sb-chip.gold {
+  background: rgba(212, 160, 23, 0.18);
+  color: #8a6100;
+}
+.sb-identity .sb-chip { font-size: 15px; font-weight: 800; padding: 7px 11px; }
+.sb-count .sb-chip { min-width: 44px; justify-content: center; font-weight: 800; font-size: 14px; padding: 6px 10px; }
+.sb-reason { font-weight: 600; line-height: 1.45; }
+
+.sb-photo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: inline-grid;
+  place-items: center;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.student-row.is-blacklisted td:first-child,
+tr.is-blacklisted td:first-child {
+  box-shadow: inset 3px 0 0 #a52222;
+}
+
+@media (max-width: 640px) {
+  .sb-card { overflow: visible; }
+  .sb-table, .sb-table thead, .sb-table tbody, .sb-table tr, .sb-table th, .sb-table td { display: block; width: 100%; }
+  .sb-table thead { display: none; }
+  .sb-table tr { margin-bottom: 12px; padding: 14px; border: 1px solid rgba(39,37,31,.14); border-left: 4px solid var(--workspace-rust, #9a3428); border-radius: 12px; background: #fffdf8; box-shadow: 0 5px 14px rgba(39,37,31,.08); }
+  .sb-table td { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 8px; padding: 7px 0; border: 0; overflow-wrap: anywhere; }
+  .sb-table td::before { content: attr(data-label); color: rgba(39,37,31,.62); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+  .sb-table .sb-identity .sb-chip { font-size: 15px; }
+  .sb-table .sb-count .sb-chip { font-size: 14px; }
+  .sb-table td small { display: block; margin-top: 3px; color: rgba(39,37,31,.58); }
+  .sb-table td:last-child { text-align: left !important; display: flex; flex-wrap: wrap; gap: 6px; }
+  .sb-table td:last-child::before { display: none; }
+  .sb-table td:last-child .btn-secondary { white-space: normal; min-height: 36px; }
+  .sb-actions { flex-direction: column; align-items: stretch; }
+  .sb-actions button { width: 100%; }
+}

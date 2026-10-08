@@ -1,14 +1,15 @@
-# LaunchPad Ready
+# Student Hub Live
 
-make my application live
+Student management software portal.
+- Login credentials are intentionally not stored in this README. Ask the administrator.
 
 This project was built with [Lovable](https://lovable.dev).
 
-**Live app**: https://launchpad-joy-82.lovable.app
+**Live app**: https://varkari.lovable.app
 
 ## Build with Lovable
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/1a93677c-e505-4a72-9641-cb8685b35dc2).
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/95d0e9e2-a138-406d-bf6e-087d09e4ef05).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
 - **Stay in sync**: every change made in Lovable is committed straight to this repository.

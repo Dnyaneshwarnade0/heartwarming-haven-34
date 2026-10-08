@@ -6,7 +6,6 @@ import {
   useRouter,
   HeadContent,
   Scripts,
-  type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
@@ -35,7 +34,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: ErrorComponentProps) {
+function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
@@ -78,21 +77,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "शांतीब्रह्म गुरुकुलम् — विद्यार्थी व्यवस्थापन" },
+      {
+        name: "description",
+        content:
+          "शांतीब्रह्म गुरुकुलम् चे विद्यार्थी व्यवस्थापन — हजेरी, फी, परीक्षा, तक्रारी आणि पालक सूचना एका ठिकाणी.",
+      },
+      { name: "author", content: "शांतीब्रह्म गुरुकुलम्" },
+      { property: "og:title", content: "शांतीब्रह्म गुरुकुलम् — विद्यार्थी व्यवस्थापन" },
+      {
+        property: "og:description",
+        content: "हजेरी, फी, परीक्षा, तक्रारी आणि पालक सूचना एका ठिकाणी.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
+
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
   }),
   shellComponent: RootShell,
