@@ -77,7 +77,7 @@ export const Route = createFileRoute("/api/public/app/state")({
           const updatedAt = new Date().toISOString();
           const { error } = await db
             .from("app_state")
-            .upsert({ org_id: org.id, data: body.data, updated_at: updatedAt }, { onConflict: "org_id" });
+            .upsert({ org_id: org.id, data: body.data as never, updated_at: updatedAt }, { onConflict: "org_id" });
           if (error) {
             console.error("app_state save failed", error.message);
             return Response.json({ error: "save_failed" }, { status: 500, headers: cors });
