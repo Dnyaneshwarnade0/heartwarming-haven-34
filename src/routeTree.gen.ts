@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPublicAiChatRouteImport } from './routes/api/public/ai-chat'
+import { Route as ApiPublicAppClaudeRouteImport } from './routes/api/public/app/claude'
 import { Route as ApiPublicAppStateRouteImport } from './routes/api/public/app/state'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
@@ -22,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 const ApiPublicAiChatRoute = ApiPublicAiChatRouteImport.update({
   id: '/api/public/ai-chat',
   path: '/api/public/ai-chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicAppClaudeRoute = ApiPublicAppClaudeRouteImport.update({
+  id: '/api/public/app/claude',
+  path: '/api/public/app/claude',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicAppStateRoute = ApiPublicAppStateRouteImport.update({
@@ -39,12 +45,14 @@ const LovableEmailTransactionalPreviewRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
+  '/api/public/app/claude': typeof ApiPublicAppClaudeRoute
   '/api/public/app/state': typeof ApiPublicAppStateRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
+  '/api/public/app/claude': typeof ApiPublicAppClaudeRoute
   '/api/public/app/state': typeof ApiPublicAppStateRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
@@ -52,6 +60,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api/public/ai-chat': typeof ApiPublicAiChatRoute
+  '/api/public/app/claude': typeof ApiPublicAppClaudeRoute
   '/api/public/app/state': typeof ApiPublicAppStateRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
@@ -60,18 +69,21 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/api/public/ai-chat'
+    | '/api/public/app/claude'
     | '/api/public/app/state'
     | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/api/public/ai-chat'
+    | '/api/public/app/claude'
     | '/api/public/app/state'
     | '/lovable/email/transactional/preview'
   id:
     | '__root__'
     | '/'
     | '/api/public/ai-chat'
+    | '/api/public/app/claude'
     | '/api/public/app/state'
     | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
@@ -79,6 +91,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiPublicAiChatRoute: typeof ApiPublicAiChatRoute
+  ApiPublicAppClaudeRoute: typeof ApiPublicAppClaudeRoute
   ApiPublicAppStateRoute: typeof ApiPublicAppStateRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
@@ -97,6 +110,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/ai-chat'
       fullPath: '/api/public/ai-chat'
       preLoaderRoute: typeof ApiPublicAiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/app/claude': {
+      id: '/api/public/app/claude'
+      path: '/api/public/app/claude'
+      fullPath: '/api/public/app/claude'
+      preLoaderRoute: typeof ApiPublicAppClaudeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/app/state': {
@@ -119,6 +139,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiPublicAiChatRoute: ApiPublicAiChatRoute,
+  ApiPublicAppClaudeRoute: ApiPublicAppClaudeRoute,
   ApiPublicAppStateRoute: ApiPublicAppStateRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }

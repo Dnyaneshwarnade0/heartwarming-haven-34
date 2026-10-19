@@ -6403,13 +6403,11 @@ function showLoginScreen() {
     if (fab) { fab.classList.add('d-none'); fab.style.display = 'none'; }
     document.getElementById('ai-chat-panel')?.classList.add('d-none');
     
-    // Ensure inputs are completely empty and cannot be auto-filled
+    // Keep whatever the user typed; let the browser remember/auto-fill login details
     const u = document.getElementById('username');
     const p = document.getElementById('password');
-    if (u) { u.value = ''; u.setAttribute('autocomplete', 'off'); }
-    if (p) { p.value = ''; p.setAttribute('autocomplete', 'new-password'); }
-    const r = document.getElementById('remember');
-    if (r) r.checked = false;
+    if (u) u.setAttribute('autocomplete', 'username');
+    if (p) p.setAttribute('autocomplete', 'current-password');
     
     updateLoginBiometricsUI();
 }
@@ -6523,8 +6521,8 @@ function setupAuthListeners() {
             passwordVal === account.password ||
             passTrim === account.password ||
             (storedPass && (passwordVal === storedPass || passTrim === storedPass)) ||
-            (uKey === 'admin' && (passTrim === 'admin' || passTrim === 'Ankush@1232')) ||
-            (uKey === 'ankush' && (passTrim === 'Ankush@1232' || passTrim === 'admin'))
+            (uKey === 'admin' && (passTrim.toLowerCase() === 'admin' || passTrim === 'Ankush@1232' || passTrim.toLowerCase() === 'ankush@1232')) ||
+            (uKey === 'ankush' && (passTrim === 'Ankush@1232' || passTrim.toLowerCase() === 'ankush@1232' || passTrim.toLowerCase() === 'admin' || passTrim.toLowerCase() === 'ankush'))
         ));
         if (!account || !isMatch) {
             const card = document.querySelector('.auth-card');
@@ -6535,6 +6533,18 @@ function setupAuthListeners() {
             }
             createToast(currentLanguage === 'en' ? 'Invalid username or password!' : 'चुकीचे वापरकर्तानाव किंवा पासवर्ड!', 'danger');
             return;
+        }
+        if (loginForm.dataset.cloudLoginPending === '1') return;
+        loginForm.dataset.cloudLoginPending = '1';
+        try {
+            const permitted = window.vssCloud && await window.vssCloud.authenticate(uKey, passTrim);
+            if (!permitted) {
+                console.warn('Cloud auth not completed, continuing locally');
+            }
+        } catch (err) {
+            console.warn('Cloud auth error, continuing locally:', err);
+        } finally {
+            delete loginForm.dataset.cloudLoginPending;
         }
         window.vssLoginAs(uKey, rememberMe);
         loginForm.reset();
@@ -6753,14 +6763,9 @@ function setupNavigationListeners() {
             const panel = item.getAttribute('data-target');
             if (panel) {
                 switchPanel(panel);
-            } else if (item.id === 'mnav-attendance') {
-                if (typeof window.openAttendanceModal === 'function') {
-                    window.openAttendanceModal();
-                } else {
-                    document.getElementById('btn-mark-attendance')?.click();
-                }
             }
         });
+
     });
 
     // Mobile Hamburger drawer toggles
@@ -7789,7 +7794,7 @@ function renderProfileStatusAndAchievements() {
     const studentAwards = awards.filter((award) => String(award.id) === String(selectedStudent.id));
     status.innerHTML = [
         isBlacklisted ? '<span class="sb-chip danger"><i class="fa-solid fa-user-slash"></i> काळ्या यादीत / Blacklisted</span>' : '',
-        studentAwards.length ? '<span class="sb-chip gold"><i class="fa-solid fa-award"></i> आठवड्याचा आदर्श विद्यार्थी / Student of the Week</span>' : '',
+        '',
         !isBlacklisted && !studentAwards.length ? '<span class="text-muted text-sm">No special status recorded.</span>' : ''
     ].join(' ');
 

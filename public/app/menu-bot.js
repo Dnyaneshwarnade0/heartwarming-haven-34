@@ -156,36 +156,167 @@
         return null;
     }
 
-    function runTypedCommand(text) {
-        const cmd = parseBotCommand(text);
-        if (!cmd) {
-            reset(T('❓ समजले नाही. कृपया मेनूमधून पर्याय निवडा.', '❓ Did not understand. Please choose an option from the menu.'));
-            return;
+    function formatBotResponse(text) {
+        if (!text) return '';
+        let escaped = esc(text);
+        escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+        escaped = escaped.replace(/\*(.*?)\*/g, '<i>$1</i>');
+        escaped = escaped.replace(/\n/g, '<br>');
+        return escaped;
+    }
+
+    async function askClaudeAi(promptText) {
+        const list = document.getElementById('bot-messages-list');
+        if (!list) return;
+
+        const userRow = document.createElement('div');
+        userRow.className = 'bot-msg-row user';
+        userRow.innerHTML = `<div class="bot-msg-bubble user-bubble">${esc(promptText)}</div>`;
+        list.appendChild(userRow);
+
+        const botRow = document.createElement('div');
+        botRow.className = 'bot-msg-row bot';
+        botRow.innerHTML = `<div class="bot-msg-bubble">🤖 <i>${T('क्लॉड विचार करत आहे...', 'Claude is thinking...')}</i></div>`;
+        list.appendChild(botRow);
+        list.scrollTop = list.scrollHeight;
+
+        try {
+            const stuSummary = students().slice(0, 100).map((s) => ({
+                id: s.id,
+                roll: s.rollNo,
+                name: nameOf(s),
+                class: s.class || s.standard || '',
+                fees: s.fees ? `Paid: ${s.fees.paid || 0}/${s.fees.total || 0}` : 'No fees info',
+                complaintsCount: (s.complaints || []).length,
+                blacklisted: Boolean(s.blacklisted)
+            }));
+
+            const contextData = JSON.stringify({
+                today: today(),
+                totalStudents: students().length,
+                students: stuSummary
+            });
+
+            const customKey = localStorage.getItem('vss_claude_api_key') || '';
+            const customWs = localStorage.getItem('vss_claude_workspace_id') || '';
+
+            const resp = await fetch('/api/public/app/claude', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: promptText,
+                    context: contextData,
+                    apiKey: customKey,
+                    workspaceId: customWs
+                })
+            });
+
+            const res = await resp.json();
+            const bubbleEl = botRow.querySelector('.bot-msg-bubble');
+            if (res.ok && res.reply) {
+                bubbleEl.innerHTML = `🤖 <b>गुरुवर्य AI:</b><br>${formatBotResponse(res.reply)}`;
+            } else if (res.details && String(res.details).toLowerCase().includes('credit balance')) {
+                bubbleEl.innerHTML = `💳 <b>Claude API Balance Required:</b><br>` +
+                    `${T('आपली API Key आणि Workspace ID यशस्वीरीत्या जोडले गेले आहेत! ✅<br><br>परंतु Anthropic खात्यात क्रेडिट संपले आहे (Credit balance is too low). कृपया <a href="https://platform.claude.com/settings/billing" target="_blank" style="color:#1B3A6B;font-weight:700;text-decoration:underline;">platform.claude.com/settings/billing</a> वर जाऊन क्रेडिट रिचार्ज करा ($5).', 'Your API Key and Workspace ID are successfully connected! ✅<br><br>However, your Anthropic credit balance is too low. Please add credits at <a href="https://platform.claude.com/settings/billing" target="_blank" style="color:#1B3A6B;font-weight:700;text-decoration:underline;">platform.claude.com/settings/billing</a>.')}`;
+            } else if (res.details && String(res.details).includes('workspace')) {
+                bubbleEl.innerHTML = `⚠️ <b>Claude Workspace ID Required:</b><br>` +
+                    `${T('आपली API Key ही User Key (sk-ant-usr) असल्यामुळे Anthropic Workspace ID आवश्यक आहे किंवा Workspace Key (sk-ant-api03-...) वापरावी लागेल.', 'Your key is a User Key (sk-ant-usr) and requires an Anthropic Workspace ID header, or use a standard Workspace Key.')}<br><br>` +
+                    `<button type="button" class="btn-bot-chip mb-primary" onclick="window.vssOpenClaudeSettings()"><i class="fa-solid fa-key"></i> ${T('Workspace ID / Key सेट करा', 'Set Workspace ID / Key')}</button>`;
+            } else {
+                const errText = res.details || res.message || res.error || T('त्रुटी आली', 'An error occurred');
+                bubbleEl.innerHTML = `⚠️ <b>Claude Error:</b> ${esc(errText)}<br><br><button type="button" class="btn-bot-chip" onclick="window.vssOpenClaudeSettings()"><i class="fa-solid fa-gear"></i> ${T('API Key सेटिंग्ज', 'API Key Settings')}</button>`;
+            }
+        } catch (e) {
+            const bubbleEl = botRow.querySelector('.bot-msg-bubble');
+            if (bubbleEl) bubbleEl.innerHTML = `⚠️ ${T('सर्व्हर संपर्क एरर:', 'Server error:')} ${esc(e.message)}`;
+        }
+        list.scrollTop = list.scrollHeight;
+    }
+
+    function showAiKeyModal() {
+        const existing = document.getElementById('vss-claude-modal');
+        if (existing) existing.remove();
+
+        const currentKey = localStorage.getItem('vss_claude_api_key') || '';
+        const currentWs = localStorage.getItem('vss_claude_workspace_id') || 'wrkspc_015WLAgtB9sohB3eCVUUQ5vR';
+
+        const modal = document.createElement('div');
+        modal.id = 'vss-claude-modal';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:99999;padding:15px;';
+        modal.innerHTML = `
+            <div style="background:#fff;border-radius:12px;padding:22px;max-width:480px;width:100%;box-shadow:0 12px 30px rgba(0,0,0,0.25);font-family:inherit;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                    <h3 style="margin:0;font-size:1.15rem;color:#1B3A6B;display:flex;align-items:center;gap:8px;">
+                        <i class="fa-solid fa-robot"></i> AI Bot Settings
+                    </h3>
+                    <button type="button" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#666;" onclick="document.getElementById('vss-claude-modal').remove()">&times;</button>
+                </div>
+                <p style="font-size:0.85rem;color:#555;margin-bottom:12px;line-height:1.4;">
+                    ${T('AI API Key आणि Workspace ID कॉन्फिगर करा:', 'Configure AI API Key and Workspace ID:')}
+                </p>
+                <div style="margin-bottom:12px;">
+                    <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:4px;color:#333;">AI API Key (Gemini किंवा Claude):</label>
+                    <input id="vss-cl-key" type="password" value="${esc(currentKey)}" placeholder="API Key टाका..." style="width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-family:monospace;font-size:0.85rem;box-sizing:border-box;">
+                    <small style="color:#666;font-size:0.75rem;">(Google Gemini किंवा Anthropic Claude)</small>
+                </div>
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:4px;color:#333;">Anthropic Workspace ID (User Key साठी आवश्यक):</label>
+                    <input id="vss-cl-ws" type="text" value="${esc(currentWs)}" placeholder="wrkspc_..." style="width:100%;padding:8px 10px;border:1px solid #ccc;border-radius:6px;font-family:monospace;font-size:0.85rem;box-sizing:border-box;">
+                    <small style="color:#888;font-size:0.75rem;">उदा. wrkspc_01... (console.anthropic.com &gt; Settings &gt; Workspaces)</small>
+                </div>
+                <div style="display:flex;justify-content:flex-end;gap:8px;">
+                    <button type="button" style="padding:8px 14px;border:1px solid #ccc;background:#f3f4f6;border-radius:6px;cursor:pointer;" onclick="document.getElementById('vss-claude-modal').remove()">${T('रद्द करा', 'Cancel')}</button>
+                    <button id="vss-cl-save-btn" type="button" style="padding:8px 18px;border:none;background:#1B3A6B;color:#fff;border-radius:6px;font-weight:600;cursor:pointer;">${T('सेव्ह करा', 'Save')}</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        document.getElementById('vss-cl-save-btn').onclick = () => {
+            const k = document.getElementById('vss-cl-key').value.trim();
+            const w = document.getElementById('vss-cl-ws').value.trim();
+            if (k) localStorage.setItem('vss_claude_api_key', k);
+            if (w) localStorage.setItem('vss_claude_workspace_id', w);
+            toast(T('Claude AI सेटिंग्ज सेव्ह झाल्या!', 'Claude AI settings saved!'), 'success');
+            modal.remove();
+        };
+    }
+    window.vssOpenClaudeSettings = showAiKeyModal;
+
+    async function runTypedCommand(text) {
+        if (!text || !text.trim()) return;
+        const raw = text.trim();
+        const cmd = parseBotCommand(raw);
+        if (cmd) {
+            // Handle general queries
+            if (cmd.intent === 'general_attendance') { st.action = 'attendance'; st.step = 'attendance-summary'; render(); return; }
+            if (cmd.intent === 'general_info') { st.msg = ''; st.step = 'home'; render(); const list = document.getElementById('bot-messages-list'); if (list) list.innerHTML = bubble(infoHtml()) + list.innerHTML; return; }
+            if (cmd.intent === 'general_complaints') { st.action = 'complaints'; st.step = 'complaints'; render(); return; }
+            if (cmd.intent === 'general_fees') { st.action = 'fees'; st.step = 'fees'; render(); return; }
+            if (cmd.intent === 'general_adarsh') { st.action = 'adarsh'; st.step = 'student'; render(); return; }
+            if (cmd.intent === 'general_backup') {
+                if (typeof window.vssOpenBackup === 'function') window.vssOpenBackup();
+                reset(T('💾 बॅकअप केंद्र उघडले आहे.', '💾 Backup Centre opened.'));
+                return;
+            }
+
+            const s = students().find((x) => String(x.rollNo) === String(cmd.roll));
+            if (s) {
+                st.student = s; st.search = '';
+                if (cmd.intent === 'info') { st.action = 'info'; st.step = 'info-confirm'; render(); return; }
+                if (cmd.intent === 'attendance') {
+                    if (cmd.session === 'school' && !schoolEligible(s)) { reset(T('या विद्यार्थ्यासाठी शाळेची हजेरी आवश्यक नाही.', 'School attendance is not required for this student.')); return; }
+                    st.action = 'attendance'; st.session = cmd.session; st.absentIds = cmd.status === 'absent' ? [String(s.id)] : [];
+                    st.step = hasExistingAttendance(cmd.session) ? 'retake' : 'absent'; render(); return;
+                }
+                if (cmd.intent === 'fee') { st.action = 'fee'; st.typedAmount = cmd.amount; st.step = 'choice'; render(); return; }
+                st.action = 'complaint'; st.complaintMode = 'single'; st.selectedIds = [String(s.id)]; st.complaintText = cmd.note || ''; st.step = 'complaint-severity'; render();
+                return;
+            }
         }
 
-        // Handle general queries
-        if (cmd.intent === 'general_attendance') { st.action = 'attendance'; st.step = 'attendance-summary'; render(); return; }
-        if (cmd.intent === 'general_info') { st.msg = ''; st.step = 'home'; render(); const list = document.getElementById('bot-messages-list'); if (list) list.innerHTML = bubble(infoHtml()) + list.innerHTML; return; }
-        if (cmd.intent === 'general_complaints') { st.action = 'complaints'; st.step = 'complaints'; render(); return; }
-        if (cmd.intent === 'general_fees') { st.action = 'fees'; st.step = 'fees'; render(); return; }
-        if (cmd.intent === 'general_adarsh') { st.action = 'adarsh'; st.step = 'student'; render(); return; }
-        if (cmd.intent === 'general_backup') {
-            if (typeof window.vssOpenBackup === 'function') window.vssOpenBackup();
-            reset(T('💾 बॅकअप केंद्र उघडले आहे.', '💾 Backup Centre opened.'));
-            return;
-        }
-
-        const s = students().find((x) => String(x.rollNo) === String(cmd.roll));
-        if (!s) { reset(T('❓ विद्यार्थी क्रमांक सापडला नाही.', '❓ Student roll not found.')); return; }
-        st.student = s; st.search = '';
-        if (cmd.intent === 'info') { st.action = 'info'; st.step = 'info-confirm'; render(); return; }
-        if (cmd.intent === 'attendance') {
-            if (cmd.session === 'school' && !schoolEligible(s)) { reset(T('या विद्यार्थ्यासाठी शाळेची हजेरी आवश्यक नाही.', 'School attendance is not required for this student.')); return; }
-            st.action = 'attendance'; st.session = cmd.session; st.absentIds = cmd.status === 'absent' ? [String(s.id)] : [];
-            st.step = hasExistingAttendance(cmd.session) ? 'retake' : 'absent'; render(); return;
-        }
-        if (cmd.intent === 'fee') { st.action = 'fee'; st.typedAmount = cmd.amount; st.step = 'choice'; render(); return; }
-        st.action = 'complaint'; st.complaintMode = 'single'; st.selectedIds = [String(s.id)]; st.complaintText = cmd.note || ''; st.step = 'complaint-severity'; render();
+        // Send to Claude AI
+        await askClaudeAi(raw);
     }
 
     function infoHtml() {
@@ -207,14 +338,17 @@
 
     function studentInfoHtml(s) {
         const fees = s.fees || {};
-        const attendance = s.dailyAttendance || {};
-        const total = Object.values(attendance).reduce((n, day) => n + Object.values(day || {}).filter((v) => typeof v === 'boolean').length, 0);
-        const present = Object.values(attendance).reduce((n, day) => n + Object.values(day || {}).filter((v) => v === true).length, 0);
-        const attendancePercent = total ? Math.round((present / total) * 100) : 0;
+
         let adarsh = [];
         try { const savedAdarsh = JSON.parse(localStorage.getItem('vss_adarsh_week') || '[]'); adarsh = Array.isArray(savedAdarsh) ? savedAdarsh : []; } catch (_) { }
-        const awardCount = adarsh.filter((entry) => String(entry.id) === String(s.id)).length;
-        const awardReasons = adarsh.filter((entry) => String(entry.id) === String(s.id)).map((entry) => `${entry.date || entry.week || '—'}: ${entry.note || '—'}`);
+        const wkNum = (v) => { const n = Number(v); return Number.isInteger(n) && n >= 1 && n <= 30 ? n : 999; };
+        adarsh = adarsh.filter(Boolean).slice().sort((a, b) => wkNum(a.week) - wkNum(b.week) || String(a.week).localeCompare(String(b.week)));
+        const isMine = (entry) => String(entry.id) === String(s.id)
+            || (entry.rollNo != null && String(entry.rollNo) !== '' && String(entry.rollNo) === String(s.rollNo))
+            || (entry.name && String(entry.name).trim() === String(nameOf(s)).trim());
+        const myAwards = adarsh.filter(isMine);
+        const awardCount = myAwards.length;
+        const awardReasons = myAwards.map((entry) => `${entry.date || (wkNum(entry.week) !== 999 ? 'Week ' + entry.week : entry.week) || '—'}: ${entry.note || '—'}`);
         let weekly = [];
         try {
             const exams = JSON.parse(localStorage.getItem('vss_exams') || '[]');
@@ -234,9 +368,9 @@
             ${T('इयत्ता', 'Class')}: ${esc(s.standard || '—')}<br>
             ${T('पालक', 'Parent')}: ${esc(s.parentName || '—')}<br>
             ${T('मोबाईल', 'Mobile')}: ${esc(s.phone || '—')}<br>
-            ${T('हजेरी', 'Attendance')}: ${present}/${total || 0} (${attendancePercent}%)<br>
-            ${T('आदर्श विद्यार्थी', 'Student of the week')}: <b>${awardCount}×</b><br>
-            ${awardReasons.length ? `${T('आदर्श विद्यार्थी कारणे', 'Student of the week reasons')}: ${awardReasons.map(esc).join(' • ')}<br>` : ''}
+            <span class="mb-adarsh">⭐ ${T('आदर्श विद्यार्थी', 'Student of the week')}</span>: <b>${awardCount}*</b><br>
+            ${awardReasons.length ? `<span class="mb-adarsh">${T('आदर्श विद्यार्थी कारणे', 'Student of the week reasons')}</span>: ${awardReasons.map(esc).join(' • ')}<br>` : ''}
+
             ${T('फी', 'Fees')}: ${T('भरले', 'Paid')} ₹${Number(fees.paid || 0)} • ${T('एकूण', 'Total')} ₹${Number(fees.total || 0)}<br>
             <hr><b>📝 ${T('साप्ताहिक गुण', 'Weekly marks')}</b><br>${weeklyText}
             <hr><b>⚠️ ${T('तक्रार इतिहास', 'Complaint history')}</b><br>${complaintText}
@@ -285,11 +419,23 @@
         const inputForm = document.getElementById('bot-input-form');
         if (inputForm) inputForm.style.display = st.step === 'home' ? 'flex' : 'none';
         const keyButton = document.getElementById('btn-bot-key');
-        if (keyButton) keyButton.style.display = 'none';
+        if (keyButton) {
+            keyButton.style.display = 'inline-flex';
+            keyButton.title = 'Claude AI Settings / API Key';
+            keyButton.onclick = () => showAiKeyModal();
+        }
+        const clearButton = document.getElementById('btn-bot-clear');
+        if (clearButton) {
+            clearButton.onclick = () => {
+                reset();
+                const ml = document.getElementById('bot-messages-list');
+                if (ml) ml.innerHTML = '';
+            };
+        }
         const title = document.getElementById('bot-panel-title');
-        if (title) title.textContent = T('गुरुकुल सहाय्यक', 'Gurukul Assistant');
+        if (title) title.textContent = T('गुरुवर्य AI सहाय्यक', 'Guruvarya AI Assistant');
         const sub = document.getElementById('bot-panel-subtitle');
-        if (sub) sub.textContent = T('पर्याय निवडा — माहिती थेट सॉफ्टवेअरमध्ये जाईल', 'Pick an option — it saves straight into the software');
+        if (sub) sub.textContent = T('AI सक्रिय — कोणताही प्रश्न विचारा किंवा पर्याय निवडा', 'AI Active — Ask questions or pick options');
         if (chips) chips.innerHTML = '';
 
         let html = st.msg ? bubble(esc(st.msg)) : '';
