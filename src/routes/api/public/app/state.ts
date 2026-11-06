@@ -112,11 +112,11 @@ export const Route = createFileRoute("/api/public/app/state")({
         if (hasSupabase) {
           try {
             const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-            const { data, error } = await supabaseAdmin
-              .from("app_state")
-              .select("data, updated_at")
-              .eq("code", code)
-              .maybeSingle();
+            const { data: org } = await supabaseAdmin
+              .from("organizations").select("id").eq("link_code", code).maybeSingle();
+            const { data, error } = org
+              ? await supabaseAdmin.from("app_state").select("data, updated_at").eq("org_id", org.id).maybeSingle()
+              : { data: null, error: null };
             if (!error && data) {
               row = data;
             }
@@ -158,9 +158,11 @@ export const Route = createFileRoute("/api/public/app/state")({
         if (hasSupabase) {
           try {
             const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-            const { error: upErr } = await supabaseAdmin
-              .from("app_state")
-              .upsert({ code, data: merged, updated_at });
+            const { data: org } = await supabaseAdmin
+              .from("organizations").select("id").eq("link_code", code).maybeSingle();
+            const { error: upErr } = org
+              ? await supabaseAdmin.from("app_state").upsert({ org_id: org.id, data: merged as never, updated_at })
+              : { error: new Error("organization not found") };
             if (!upErr) {
               return Response.json({ ok: true, updated_at });
             }

@@ -30,7 +30,7 @@ export const Route = createFileRoute("/api/public/app/claude")({
 ${body.context || "कोणताही संदर्भ उपलब्ध नाही."}`;
 
         // 1. Try Gemini 3.8 Flash (Active & Free)
-        const geminiKey = (process.env.GEMINI_API_KEY || "").trim();
+        const geminiKey = (process.env["GEMINI_API_KEY"] || "").trim();
         const prefersClaude = body.provider === "claude";
 
         if (geminiKey && !prefersClaude) {
@@ -65,8 +65,8 @@ ${body.context || "कोणताही संदर्भ उपलब्ध �
         }
 
         // 2. Try Claude AI
-        const apiKey = (body.apiKey || process.env.ANTHROPIC_API_KEY || "").trim();
-        const workspaceId = (body.workspaceId || process.env.ANTHROPIC_WORKSPACE_ID || "").trim();
+        const apiKey = (body.apiKey || process.env["ANTHROPIC_API_KEY"] || "").trim();
+        const workspaceId = (body.workspaceId || process.env["ANTHROPIC_WORKSPACE_ID"] || "").trim();
 
         if (apiKey) {
           const headers: Record<string, string> = {
